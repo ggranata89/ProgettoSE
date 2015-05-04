@@ -1,6 +1,10 @@
 package com.example.ricky.mycity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -8,6 +12,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -28,6 +36,11 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        if(!isOnline()) {
+            LinearLayout linearLayout = new LinearLayout(this);
+            View view = new TextView(this);
+            linearLayout.addView(view);
+        }
     }
 
     @Override
@@ -86,17 +99,29 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
         }
 
         protected void onPostExecute(Integer result){
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            if(session_name != null && sessid != null) {
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 
-            intent.putExtra("session_name", session_name);
-            intent.putExtra("sessid", sessid);
+                intent.putExtra("session_name", session_name);
+                intent.putExtra("sessid", sessid);
 
-            startActivity(intent);
+                startActivity(intent);
+            }else{
+                Toast toast = Toast.makeText(getApplicationContext(),"Autenticazione non riuscita", Toast.LENGTH_LONG);
+                toast.show();
+            }
+
         }
 
     }
 
     public void doLoginButton(View view){
         new doLogin().execute();
+    }
+
+    private boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 }
