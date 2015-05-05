@@ -1,5 +1,7 @@
 package com.example.ricky.mycity;
 
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -8,6 +10,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +19,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.gc.materialdesign.widgets.Dialog;
+import com.gc.materialdesign.widgets.SnackBar;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -31,16 +37,12 @@ import org.json.JSONObject;
 public class LoginActivity extends ActionBarActivity implements Costanti{
 
     private String sessid, session_name;
+    private boolean isConnected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        if(!isOnline()) {
-            LinearLayout linearLayout = new LinearLayout(this);
-            View view = new TextView(this);
-            linearLayout.addView(view);
-        }
     }
 
     @Override
@@ -115,13 +117,31 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
 
     }
 
-    public void doLoginButton(View view){
-        new doLogin().execute();
+    private boolean showStatusConnection(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifiNetwork = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if(wifiNetwork != null && wifiNetwork.isConnected())
+            return true;
+
+        NetworkInfo mobileNetwork = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if(mobileNetwork != null && mobileNetwork.isConnected())
+            return true;
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        if(activeNetwork != null && activeNetwork.isConnected())
+            return true;
+
+        return false;
     }
 
-    private boolean isOnline(){
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnectedOrConnecting();
+    public void doLoginButton(View view){
+        if(showStatusConnection())
+            new doLogin().execute();
+        else {
+            //Toast.makeText(getApplicationContext(),"Connessione Assente", Toast.LENGTH_LONG).show();
+            Dialog dialog = new Dialog(this,"Connessione Assente", "Impossibile contattare il server. Controlla la connessione e riprova.");
+            dialog.show();
+        }
+
     }
 }
