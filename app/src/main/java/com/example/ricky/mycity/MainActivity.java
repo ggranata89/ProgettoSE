@@ -1,36 +1,59 @@
 package com.example.ricky.mycity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.net.URL;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
 import it.neokree.materialnavigationdrawer.elements.listeners.MaterialAccountListener;
 
 public class MainActivity extends MaterialNavigationDrawer implements MaterialAccountListener {
+
+    private String name, mail, img_url;
+    private ProgressDialog pDialog;
+    private Bitmap bitmap;
+    private MaterialAccount myAccount;
+
     @Override
     public void init(Bundle savedInstanceState){
 
         Intent intent = getIntent();
         String user = intent.getStringExtra(LoginActivity.USER_DETAILS);
+        img_url = intent.getStringExtra(LoginActivity.USER_IMAGE);
+        Log.d("FROM MAIN", img_url);
 
         JSONObject jsonObject = null;
+        JSONObject jsonObject1 = null;
         try {
             jsonObject = new JSONObject(user);
-            Log.d("FROM MAIN ACTIVITY JSON", jsonObject.getString("name"));
+            name = jsonObject.getString("name");
+            mail = jsonObject.getString("mail");
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+//        Log.d("FROM MAIN - URL", img_url);
+
+        new LoadImage().execute(img_url);
+
+        //Log.d("MAIN BITMAP", bitmap.toString());
         //Account
-        MaterialAccount myAccount = new MaterialAccount(this.getResources(), "Demo", "demo@example.com", R.drawable.photo, R.drawable.background);
+        myAccount = new MaterialAccount(this.getResources(), name, mail, R.drawable.photo, R.drawable.background);
         this.addAccount(myAccount);
 
         this.setAccountListener(this);
@@ -72,5 +95,48 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     @Override
     public void onChangeAccount(MaterialAccount account){
         //TODO
+    }
+
+    private class LoadImage extends AsyncTask<String, String, Bitmap> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog.setMessage("Loading Image ....");
+            pDialog.show();
+
+        }
+        protected Bitmap doInBackground(String... args) {
+            try {
+                bitmap = BitmapFactory.decodeStream((InputStream) new URL(args[0]).getContent());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return bitmap;
+        }
+
+        protected void onPostExecute(Bitmap image) {
+
+            if(image != null){
+                //mg.setImageBitmap(image);
+                /*runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // removeAccount(account);
+                        notifyAccountDataChanged();
+                    }
+                });*/
+                myAccount.setPhoto(bitmap);
+                Log.d("FROM THREAD MAIN BITMAP", bitmap.toString());
+                pDialog.dismiss();
+
+            }else{
+
+                pDialog.dismiss();
+                Toast.makeText(MainActivity.this, "Image Does Not exist or Network Error", Toast.LENGTH_SHORT).show();
+
+            }
+        }
     }
 }
