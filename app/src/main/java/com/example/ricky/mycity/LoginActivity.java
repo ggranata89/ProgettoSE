@@ -98,8 +98,11 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
                 sessid = jsonObj.getString("sessid");
                 token = jsonObj.getString("token");
                 user = jsonObj.getString("user");
-                //JSONObject picture = new JSONObject(user);
-                img_url = jsonObj.getString("url");
+                JSONObject userObj = new JSONObject(user);
+                String str = userObj.getString("picture");
+                //String picture = jsonObj.getString("picture");
+                JSONObject jsonObject1 = new JSONObject(str);
+                img_url = jsonObject1.getString("url");
                 System.out.println("FROM LOGIN " + img_url);
                 Log.d("FROM LOGIN", img_url);
 
@@ -155,6 +158,14 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
             Dialog dialog = new Dialog(this,"Connessione Assente", "Impossibile contattare il server. Controlla la connessione e riprova.");
             dialog.show();
         }
+
+    }
+
+    public void doRegisterButton(View view) {
+        // new doRegister().execute();
+        Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+
+        startActivity(intent);
 
     }
 }

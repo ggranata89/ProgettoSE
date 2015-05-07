@@ -5,4 +5,5 @@ package com.example.ricky.mycity;
  */
 public interface Costanti {
     public static String LOGIN_URI = "http://46.101.148.74/rest/user/login";
+    public static String REGISTER_URI = "http://46.101.148.74/rest/user/register";
 }

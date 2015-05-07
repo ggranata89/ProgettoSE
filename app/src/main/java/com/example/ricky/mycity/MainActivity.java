@@ -35,7 +35,6 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         Intent intent = getIntent();
         String user = intent.getStringExtra(LoginActivity.USER_DETAILS);
         img_url = intent.getStringExtra(LoginActivity.USER_IMAGE);
-        Log.d("FROM MAIN", img_url);
 
         JSONObject jsonObject = null;
         JSONObject jsonObject1 = null;
@@ -49,11 +48,12 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
 
 //        Log.d("FROM MAIN - URL", img_url);
 
-        new LoadImage().execute(img_url);
+        if(img_url!=null)
+            new LoadImage().execute(img_url);
 
         //Log.d("MAIN BITMAP", bitmap.toString());
         //Account
-        myAccount = new MaterialAccount(this.getResources(), name, mail, R.drawable.photo, R.drawable.background);
+        myAccount = new MaterialAccount(this.getResources(), name, mail, R.drawable.default_img, R.drawable.background);
         this.addAccount(myAccount);
 
         this.setAccountListener(this);
