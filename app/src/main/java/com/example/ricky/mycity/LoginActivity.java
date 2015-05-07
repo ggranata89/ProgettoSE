@@ -36,7 +36,9 @@ import org.json.JSONObject;
 
 public class LoginActivity extends ActionBarActivity implements Costanti{
 
-    private String sessid, session_name;
+    public final static String USER_DETAILS = "com.example.ricky.mycity.USER_DETAILS";
+
+    private String sessid, session_name, token, user;
     private boolean isConnected = false;
 
     @Override
@@ -93,6 +95,8 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
 
                 session_name = jsonObj.getString("session_name");
                 sessid = jsonObj.getString("sessid");
+                token = jsonObj.getString("token");
+                user = jsonObj.getString("user");
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -106,6 +110,8 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
 
                 intent.putExtra("session_name", session_name);
                 intent.putExtra("sessid", sessid);
+                intent.putExtra("token", token);
+                intent.putExtra(USER_DETAILS, user);
 
                 startActivity(intent);
             }else{

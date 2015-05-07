@@ -5,6 +5,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
@@ -13,6 +17,17 @@ import it.neokree.materialnavigationdrawer.elements.listeners.MaterialAccountLis
 public class MainActivity extends MaterialNavigationDrawer implements MaterialAccountListener {
     @Override
     public void init(Bundle savedInstanceState){
+
+        Intent intent = getIntent();
+        String user = intent.getStringExtra(LoginActivity.USER_DETAILS);
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(user);
+            Log.d("FROM MAIN ACTIVITY JSON", jsonObject.getString("name"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         //Account
         MaterialAccount myAccount = new MaterialAccount(this.getResources(), "Demo", "demo@example.com", R.drawable.photo, R.drawable.background);
@@ -46,7 +61,7 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        return "\u00A9  Tefranet versione " + packageInfo.versionName;
+        return "\u00A9  MyCity versione " + packageInfo.versionName;
     }
 
     @Override
