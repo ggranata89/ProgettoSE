@@ -20,7 +20,7 @@ public class FragmentButton extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-        textView.setText("TEFRANETUI RULES!");
+        textView.setText("MYCITY RULES!");
         return rootView;
 
 

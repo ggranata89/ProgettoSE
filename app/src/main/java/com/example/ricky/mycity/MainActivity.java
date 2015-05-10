@@ -64,7 +64,7 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         //this.addSection(newSection(getString(R.string.info), new FragmentIndex()));
         //this.addSection(newSection("Section 2", new FragmentIndex()));
         this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, new FragmentButton()));
-        this.addSection(newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, new FragmentButton()));
+        this.addSection(newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, new FragmentMap()));
         //this.addSubheader("Categoria");
         this.addDivisor();
         this.addSection(newSection(getString(R.string.profile), R.mipmap.profile, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
