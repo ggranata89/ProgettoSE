@@ -57,12 +57,6 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         this.addAccount(myAccount);
 
         this.setAccountListener(this);
-
-        //setDrawerHeaderImage(R.drawable.background);
-        //setUsername(getString(R.string.app_name));
-        //setUserEmail(getAppVersion());
-        //this.addSection(newSection(getString(R.string.info), new FragmentIndex()));
-        //this.addSection(newSection("Section 2", new FragmentIndex()));
         this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, new FragmentButton()));
         this.addSection(newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, new FragmentMap()));
         //this.addSubheader("Categoria");
