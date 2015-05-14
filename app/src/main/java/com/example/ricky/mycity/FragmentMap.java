@@ -1,5 +1,7 @@
 package com.example.ricky.mycity;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,19 +21,27 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by ricky on 2/20/15.
@@ -40,25 +50,27 @@ public class FragmentMap extends Fragment {
 
     private GoogleMap googleMap;
     private MapView mapView;
-    private double latitude, longitude, latitudeMarker, longitudeMarker;
-    private String title, location;
+    private double latitude, longitude;
+    private String title, user, body, date, priority, category;
+    private Long timestamp;
+
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
         mapView = (MapView) rootView.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
 
-        try{
+        try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         Bundle args = getArguments();
         latitude = args.getDouble("latitude", 0.0);
-        longitude= args.getDouble("longitude", 0.0);
+        longitude = args.getDouble("longitude", 0.0);
 
         Log.d("FRAGMENT MAP LATITUDE", "latitude: " + latitude);
         Log.d("FRAGMENT MAP LONGITUDE", "longitude: " + longitude);
@@ -69,74 +81,170 @@ public class FragmentMap extends Fragment {
         googleMap.addMarker(new MarkerOptions()
                 .position(new LatLng(latitude, longitude))
                 .title("My Current Position"));
-        new LoadMarkers().execute();
+
+        //Async task to load location from webservice
+        new doLoadLocation().execute();
         return rootView;
     }
 
-    public class LoadMarkers extends AsyncTask<Void, Void, String> implements Costanti{
+
+    private class doLoadLocation extends AsyncTask<Void, Void, HashMap<String, Report>> implements Costanti {
+        public HashMap<String, Report> reportMap = new HashMap<>();
+        Report report = null;
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            //TODO
-        }
+        protected HashMap<String, Report> doInBackground(Void... params) {
 
-        @Override
-        protected String doInBackground(Void... arg0) {
-            URL url;
-            StringBuffer sb = new StringBuffer();
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet(REPORT_URI);
+            String jsonResponse;
+
+            double latitude;
+            double longitude;
             try {
-                url = new URL(REPORT_URI);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setDoInput(true);
-                connection.connect();
-                Log.d("FROM BACKGROUND", "Response Code: " + connection.getResponseCode());
-                InputStream iStream = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(iStream));
-                String line;
-                while( (line = reader.readLine()) != null){
-                    sb.append(line);
-                    Log.d("FROM LOAD", line);
+
+                HttpResponse httpResponse = httpClient.execute(httpGet);
+                jsonResponse = EntityUtils.toString(httpResponse.getEntity());
+                Log.d("MainActivity-JSON", jsonResponse);
+                JSONArray jsonArray = new JSONArray(jsonResponse);
+                for (int i = 0; i < jsonArray.length(); i++) {
+
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    title = jsonObject.getString("title");
+                    body = jsonObject.getJSONObject("body").getJSONArray("und").getJSONObject(0).getString("value");
+                    timestamp = Long.parseLong(jsonObject.getString("created"));
+                    date = convertTimestampToDate(timestamp);
+
+                    priority = jsonObject.getJSONObject("field_priority").getJSONArray("und").getJSONObject(0).getString("value");
+                    priority = getPriorityByIndex(priority);
+
+                    category = jsonObject.getJSONObject("field_priority").getJSONArray("und").getJSONObject(0).getString("value");
+                    category = getCategoryByIndex(category);
+
+                    JSONObject jsonLocation = jsonObject.getJSONObject("location");
+                    latitude = Double.parseDouble(jsonLocation.getString("latitude"));
+                    longitude = Double.parseDouble(jsonLocation.getString("longitude"));
+                    user = jsonObject.getString("name");
+                    reportMap.put(title, new Report(title, body, new LatLng(latitude, longitude), priority, category, user, date));
+
                 }
 
-                reader.close();
-                iStream.close();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            Log.d("FROM LOAD MARKERS", sb.toString());
-            return sb.toString();
+            return reportMap;
         }
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            parserMarker(result);
-            //new ParserTask().execute(result);
+        public String getPriorityByIndex(String priority) {
+            switch (priority) {
+                case "1":
+                    return "NONE";
+                case "2":
+                    return "MINOR";
+                case "3":
+                    return "NORMAL";
+                case "4":
+                    return "CRITICAL";
+                default:
+                    return "NONE";
+            }
         }
 
-        public void parserMarker(String string){
-            JSONArray reports = null;
-            JSONObject locationObject = null;
+        public String getCategoryByIndex(String category) {
+            switch (category) {
+                case "1":
+                    return "WASTE_MANAGEMENT";
+                case "2":
+                    return "ROUTINE_MAINTENANCE";
+                case "3":
+                    return "ROAD_SIGN";
+                case "4":
+                    return "VANDALISM";
+                case "5":
+                    return "ILLEGAL_BILLPOSTING";
+                case "6":
+                    return "OTHER";
+                default:
+                    return "NONE";
+            }
+        }
+
+        public String convertTimestampToDate(Long timestamp) {
+
+            Calendar cal = Calendar.getInstance();
+            TimeZone tz = cal.getTimeZone();//get your local time zone.
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+            sdf.setTimeZone(tz);//set time zone.
+            String localTime = sdf.format(timestamp * 1000);
+            Date date = new Date();
             try {
-                reports = new JSONArray(string);
-                for(int i = 0; i<reports.length(); ++i) {
-                    title = reports.getJSONObject(i).getString("title");
-                    location = reports.getJSONObject(i).getString("location");
-                    locationObject = new JSONObject(location);
-                    latitudeMarker = locationObject.getDouble("latitude");
-                    longitudeMarker = locationObject.getDouble("longitude");
-                    googleMap.addMarker(new MarkerOptions()
-                            .position(new LatLng(latitudeMarker, longitudeMarker))
-                            .title(title));
-                }
-            } catch (JSONException e) {
+                date = sdf.parse(localTime);//get local date
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
+            return String.valueOf(date);
         }
-    }
+
+
+        protected void onPostExecute(final HashMap reportMap) {
+
+            if (!this.reportMap.isEmpty()) {
+                Iterator iterator = reportMap.keySet().iterator();
+                while (iterator.hasNext()) {
+                    String key = iterator.next().toString();
+                    report = (Report) reportMap.get(key);
+                    final MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(report.getLocation());
+
+                    googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                        @Override
+                        public View getInfoWindow(Marker marker) {
+                            return null;
+                        }
+
+                        @Override
+                        public View getInfoContents(Marker marker) {
+
+                            // Getting view from the layout file info_window_layout
+                            View v = getActivity().getLayoutInflater().inflate(R.layout.info_window_layout, null);
+                            // Getting the position from the marker
+                            LatLng latLng = marker.getPosition();
+
+                            TextView tvLat = (TextView) v.findViewById(R.id.tv_lat);
+                            TextView tvLng = (TextView) v.findViewById(R.id.tv_lng);
+                            TextView tvDescription = (TextView) v.findViewById(R.id.tv_report_description);
+                            TextView tvCategory = (TextView) v.findViewById(R.id.tv_report_category);
+                            TextView tvPriority = (TextView) v.findViewById(R.id.tv_report_priority);
+                            TextView tvUser = (TextView) v.findViewById(R.id.tv_user);
+                            TextView tvDate = (TextView) v.findViewById(R.id.tv_report_date);
+
+                            Iterator iterator = reportMap.keySet().iterator();
+
+                            while (iterator.hasNext()) {
+                                String key = iterator.next().toString();
+                                report = (Report) reportMap.get(key);
+
+                                if (marker.getPosition().latitude == report.getLocation().latitude && marker.getPosition().longitude == report.getLocation().longitude) {
+
+                                    tvLat.setText("Latitude: " + report.getLocation().latitude);
+                                    tvLng.setText("Longitude: " + report.getLocation().longitude);
+                                    tvDescription.setText("Description: " + report.getBody());
+                                    tvCategory.setText("Category: " + report.getCategory());
+                                    tvPriority.setText("Priority: " + report.getPriority());
+                                    tvUser.setText("User: " + report.getUser());
+                                    tvDate.setText("Date: " + report.getDate());
+                                }
+                            }
+                            return v;
+                        }
+                    });
+                    googleMap.addMarker(markerOptions).showInfoWindow();
+                }
+            }
+        }
+   }
 }
+
+
+
