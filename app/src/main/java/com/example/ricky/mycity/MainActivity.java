@@ -76,7 +76,7 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         this.addSection(newSection(getString(R.string.profile), R.mipmap.profile, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
         this.addSection(newSection(getString(R.string.info), R.mipmap.info, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
         this.addSection(newSection(getString(R.string.aiuto), R.mipmap.aiuto, new FragmentButton()).setSectionColor(Color.parseColor("#03a9f4")));
-        this.addSection(newSection(getString(R.string.credits), R.mipmap.map, new FragmentButton()).setSectionColor(Color.parseColor("#03a9f4")));
+        this.addSection(newSection(getString(R.string.logout), R.mipmap.credits, new FragmentLogout()).setSectionColor(Color.parseColor("#03a9f4")));
 
         this.addSubheader(getAppVersion());
 
