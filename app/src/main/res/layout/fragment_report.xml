@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1">
+
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Title:"
+        android:id="@+id/title"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_margin="0dp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/report_title" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Description:"
+        android:id="@+id/description"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_margin="0dp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:ems="10"
+        android:id="@+id/report_body"
+        android:layout_weight="0.21" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Priority:"
+        android:id="@+id/report_priority"
+        android:layout_margin="0dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="0dp" />
+
+    <RadioGroup
+        android:layout_width="394dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/Priority_RadioGroup"
+        android:orientation = "horizontal">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="None"
+            android:id="@+id/Priority_radioButton1"
+            android:layout_gravity="center_horizontal" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Minor"
+            android:id="@+id/Priority_radioButton2" />
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Normal"
+            android:id="@+id/Priority_radioButton3" />
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Critical"
+            android:id="@+id/Priority_radioButton4" />
+
+    </RadioGroup>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Category:"
+        android:id="@+id/textView3"
+        android:layout_margin="0dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="0dp" />
+
+    <RadioGroup
+        android:layout_width="394dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/Category_RadioGroup"
+        android:orientation = "vertical">
+
+
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Waste Management"
+            android:id="@+id/Category_radioButton1"
+             />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Routine Maintance"
+            android:id="@+id/Category_radioButton2" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Road Sign"
+            android:id="@+id/Category_radioButton3" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vandalism"
+            android:id="@+id/Category_radioButton4" />
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Illegal BillPosting"
+            android:id="@+id/Category_radioButton5" />
+
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Other"
+            android:id="@+id/Category_radioButton6" />
+
+
+
+    </RadioGroup>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background= "@drawable/camera"
+        android:id="@+id/camera"
+        android:layout_gravity="center_horizontal|right" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Report"
+        android:id="@+id/send_report"
+        android:layout_gravity="center_horizontal"/>
+
+
+
+</LinearLayout>
