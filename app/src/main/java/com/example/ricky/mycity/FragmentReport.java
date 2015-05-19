@@ -1,6 +1,9 @@
 package com.example.ricky.mycity;
 
+import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,6 +11,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.renderscript.RenderScript;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,12 +28,16 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 /**
@@ -37,12 +45,14 @@ import java.io.File;
  */
 public class FragmentReport extends FragmentButton implements Costanti,View.OnClickListener {
     private String sessid,session_name,token;
-    private String title,description;
+    private String title,description,encoded_image;
     int priority_index,category_index;
+    int lid = 40;
     EditText tvTitle,tvDescription;
     RadioGroup CategoryGroup,PriorityGroup;
+
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_report, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_blank, container, false);
 
         tvTitle = (EditText) rootView.findViewById(R.id.report_title);
         tvDescription = (EditText) rootView.findViewById(R.id.report_body);
@@ -63,6 +73,7 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
 
     @Override
     public void onClick(View v) {
+        String path = "";
         switch (v.getId()){
             case R.id.send_report:
                 title = tvTitle.getText().toString().trim();
@@ -78,19 +89,69 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
                 radioButton = CategoryGroup.findViewById(radioButtonID);
                 category_index = CategoryGroup.indexOfChild(radioButton);
                 Log.v("REPORT-Category", String.valueOf(category_index));
+                Log.v("Photo",path);
                 new doSendReport().execute();
                 break;
 
             case R.id.camera:
                 Log.v("REPORT","Image button pressed");
                 File destination = new File(Environment
-                        .getExternalStorageDirectory(), title + ".jpg");
-
+                        .getExternalStorageDirectory(), "report_photo.jpg");
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(destination));
+
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(destination));
+                path = Uri.fromFile(destination).getPath();
+                Log.v("Photo2",path);
                 startActivityForResult(intent, 2);
+                encoded_image = createEncodedImage(path);
+                new doUploadImage().execute(encoded_image);
                 break;
+        }
+
+
+    }
+
+    private String createEncodedImage(String path) {
+        Bitmap bitmap = BitmapFactory.decodeFile(path);
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArray);
+        byte[] byteArrayImage = byteArray.toByteArray();
+        String encodedImage = Base64.encodeToString(byteArrayImage,Base64.DEFAULT);
+        return encodedImage;
+    }
+
+    private class doUploadImage extends AsyncTask<String,Void,Void> {
+
+        @Override
+        protected Void doInBackground(String... encodedImage) {
+            HttpClient mHttpClient = new DefaultHttpClient();
+            HttpParams mHttpParams = new BasicHttpParams();
+            HttpConnectionParams.setConnectionTimeout(mHttpParams, 10000);
+            HttpConnectionParams.setSoTimeout(mHttpParams, 10000);
+
+
+            HttpPost httppost = new HttpPost(FILE_URI);
+            httppost.setHeader("Content-type", "application/json");
+
+            String cookie;
+            StringEntity se;
+            try {
+
+                httppost.setHeader("Cookie", session_name + "=" + sessid);
+                httppost.setHeader("X-CSRF-Token", token);
+                JSONObject dataOut = new JSONObject();
+                //dataOut.put("file", encodedImage);
+                dataOut.put("file", "/storage/emulated/0/report_photo.jpg");
+                Log.d("ENCODED_IMAGE",encoded_image);
+                se = new StringEntity(dataOut.toString());
+                httppost.setEntity(se);
+                HttpResponse response = mHttpClient.execute(httppost);
+                String logResponse = EntityUtils.toString(response.getEntity());
+                Log.d("FILE_RESPONSE", "re:" + logResponse);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         }
 
 
@@ -116,14 +177,13 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
                 jsonObject.put("body", buildDescriptionJSON(description));
 
                 jsonObject.put("field_priority", buildJSON(String.valueOf(priority_index + 1)));
-                jsonObject.put("field_category",buildJSON(String.valueOf(category_index+1)));
-                //jsonObject.put("validated","TRUE");
+                jsonObject.put("field_category",buildJSON(String.valueOf(category_index + 1)));
 
-                /*JSONObject locationJSON = new JSONObject();
-                locationJSON.put("latitude","37.80");
-                locationJSON.put("longitude","15.00");*/
 
-                jsonObject.put("locations",buildLocationJSON("37.553900","15.010071"));
+
+                jsonObject.put("field_report_location",buildLocationJSON("37.553900", "15.010071"));
+
+
                 Log.v("JSON-BUILD", jsonObject.toString());
 
                 StringEntity stringEntity = new StringEntity(jsonObject.toString());
@@ -177,29 +237,23 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         return json;
     }
 
-    private JSONArray buildLocationJSON(String latitude,String longitude) {
+    private JSONObject buildLocationJSON(String latitude,String longitude) {
         JSONObject json = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         JSONObject nestedJSON = new JSONObject();
-        JSONObject lockpickJSON = new JSONObject();
+
         try {
-            nestedJSON.put("country","it");
-            nestedJSON.put("source","0");
-            nestedJSON.put("latitude",latitude);
-            nestedJSON.put("longitude",longitude);
-
-            nestedJSON.put("is_primary","0");
-            lockpickJSON.put("user_latitude",latitude);
-            lockpickJSON.put("user_longitude",longitude);
-            nestedJSON.put("lockpick",lockpickJSON);
-            nestedJSON.put("country_name","Italy");
-
+            nestedJSON.put("input_format","GEOFIELD_INPUT_WKT");
+            nestedJSON.put("geom","POINT("+latitude+" "+longitude+")");
             jsonArray.put(nestedJSON);
+            json.put("und",jsonArray);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        return jsonArray;
+        return json;
     }
+
+
 }

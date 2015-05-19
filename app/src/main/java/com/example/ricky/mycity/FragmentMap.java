@@ -107,6 +107,7 @@ public class FragmentMap extends Fragment {
                 jsonResponse = EntityUtils.toString(httpResponse.getEntity());
                 Log.d("MainActivity-JSON", jsonResponse);
                 JSONArray jsonArray = new JSONArray(jsonResponse);
+                Log.v("JSON LENGTH", String.valueOf(jsonArray.length()));
                 for (int i = 0; i < jsonArray.length(); i++) {
 
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -121,9 +122,9 @@ public class FragmentMap extends Fragment {
                     category = jsonObject.getJSONObject("field_priority").getJSONArray("und").getJSONObject(0).getString("value");
                     category = getCategoryByIndex(category);
 
-                    JSONObject jsonLocation = jsonObject.getJSONObject("location");
-                    latitude = Double.parseDouble(jsonLocation.getString("latitude"));
-                    longitude = Double.parseDouble(jsonLocation.getString("longitude"));
+                    JSONObject jsonLocation = jsonObject.getJSONObject("field_report_location");
+                    latitude = Double.parseDouble(jsonLocation.getJSONArray("und").getJSONObject(0).getString("lat"));
+                    longitude = Double.parseDouble(jsonLocation.getJSONArray("und").getJSONObject(0).getString("lon"));
                     user = jsonObject.getString("name");
                     reportMap.put(title, new Report(title, body, new LatLng(latitude, longitude), priority, category, user, date));
 
