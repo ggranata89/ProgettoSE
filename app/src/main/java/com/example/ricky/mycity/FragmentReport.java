@@ -39,6 +39,8 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * Created by giuseppe on 15/05/15.
@@ -46,6 +48,7 @@ import java.io.File;
 public class FragmentReport extends FragmentButton implements Costanti,View.OnClickListener {
     private String sessid,session_name,token;
     private String title,description,encoded_image;
+    String path = "";
     int priority_index,category_index;
     int lid = 40;
     EditText tvTitle,tvDescription;
@@ -73,13 +76,13 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
 
     @Override
     public void onClick(View v) {
-        String path = "";
-        switch (v.getId()){
+
+        switch (v.getId()) {
             case R.id.send_report:
                 title = tvTitle.getText().toString().trim();
                 description = tvDescription.getText().toString().trim();
-                Log.v("REPORT-TITLE",title);
-                Log.v("REPORT-DESCRIPTION",description);
+                Log.v("REPORT-TITLE", title);
+                Log.v("REPORT-DESCRIPTION", description);
                 int radioButtonID = PriorityGroup.getCheckedRadioButtonId();
                 View radioButton = PriorityGroup.findViewById(radioButtonID);
                 priority_index = PriorityGroup.indexOfChild(radioButton);
@@ -89,35 +92,41 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
                 radioButton = CategoryGroup.findViewById(radioButtonID);
                 category_index = CategoryGroup.indexOfChild(radioButton);
                 Log.v("REPORT-Category", String.valueOf(category_index));
-                Log.v("Photo",path);
+                Log.v("Photo", path);
                 new doSendReport().execute();
                 break;
 
             case R.id.camera:
-                Log.v("REPORT","Image button pressed");
+                Log.v("REPORT", "Image button pressed");
+
                 File destination = new File(Environment
                         .getExternalStorageDirectory(), "report_photo.jpg");
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(destination));
                 path = Uri.fromFile(destination).getPath();
-                Log.v("Photo2",path);
+                Log.v("Photo2", path);
                 startActivityForResult(intent, 2);
-                encoded_image = createEncodedImage(path);
-                new doUploadImage().execute(encoded_image);
                 break;
+            }
         }
 
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+            encoded_image = createEncodedImage(path);
+            new doUploadImage().execute(encoded_image);
+            Log.v("PHOTO","Foto acquisita correttamente");
 
-    }
+        }
 
     private String createEncodedImage(String path) {
+
         Bitmap bitmap = BitmapFactory.decodeFile(path);
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArray);
-        byte[] byteArrayImage = byteArray.toByteArray();
-        String encodedImage = Base64.encodeToString(byteArrayImage,Base64.DEFAULT);
-        return encodedImage;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
+        byte[] b = baos.toByteArray();
+        String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
+        return imageEncoded;
     }
 
     private class doUploadImage extends AsyncTask<String,Void,Void> {
@@ -133,21 +142,26 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
             HttpPost httppost = new HttpPost(FILE_URI);
             httppost.setHeader("Content-type", "application/json");
 
-            String cookie;
+
             StringEntity se;
             try {
 
                 httppost.setHeader("Cookie", session_name + "=" + sessid);
                 httppost.setHeader("X-CSRF-Token", token);
                 JSONObject dataOut = new JSONObject();
-                //dataOut.put("file", encodedImage);
-                dataOut.put("file", "/storage/emulated/0/report_photo.jpg");
-                Log.d("ENCODED_IMAGE",encoded_image);
+                dataOut.put("file", encoded_image);
+
+                dataOut.put("filename","prova2.jpg");
+                //dataOut.put("filemime","image/jpeg");
+                dataOut.put("target_uri","/var/www/html/sites/default/files/prova2.jpg");
+
+                Log.d("IMAGE", String.valueOf(dataOut));
+                Log.d("ENCODED-IMAGE",encoded_image);
                 se = new StringEntity(dataOut.toString());
                 httppost.setEntity(se);
                 HttpResponse response = mHttpClient.execute(httppost);
                 String logResponse = EntityUtils.toString(response.getEntity());
-                Log.d("FILE_RESPONSE", "re:" + logResponse);
+                Log.d("FILE_RESPONSE", logResponse);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -169,30 +183,20 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
                 httpPost.setHeader("Cookie", session_name + "=" + sessid);
                 httpPost.setHeader("X-CSRF-Token", token);
 
-
                 JSONObject jsonObject = new JSONObject();
-
                 jsonObject.put("title", title);
                 jsonObject.put("type", "report");
                 jsonObject.put("body", buildDescriptionJSON(description));
-
                 jsonObject.put("field_priority", buildJSON(String.valueOf(priority_index + 1)));
                 jsonObject.put("field_category",buildJSON(String.valueOf(category_index + 1)));
-
-
-
                 jsonObject.put("field_report_location",buildLocationJSON("37.553900", "15.010071"));
-
+                jsonObject.put("field_img_report",buildImageField("prova2_1.jpg"));
 
                 Log.v("JSON-BUILD", jsonObject.toString());
 
                 StringEntity stringEntity = new StringEntity(jsonObject.toString());
-
                 httpPost.setEntity(stringEntity);
-
-
                 HttpResponse httpResponse = httpClient.execute(httpPost);
-
                 String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
                 Log.v("REPORT-SEND", jsonResponse);
 
@@ -201,6 +205,28 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
             }
             return null;
         }
+    }
+
+    private JSONObject buildImageField(String s) {
+        JSONObject json = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        JSONObject nestedJSON = new JSONObject();
+        try {
+            nestedJSON.put("filename","prova2_1.jpg");
+            nestedJSON.put("uri","/var/www/html/sites/default/files/prova2_1_0.jpg");
+            nestedJSON.put("filemime","image/jpeg");
+            nestedJSON.put("status","1");
+            //nestedJSON.put("summary","");
+            //nestedJSON.put("format","filtered_html");
+            //nestedJSON.put("safe_value","<p>"+description+"</p>");
+            //nestedJSON.put("safe_summary","");
+            jsonArray.put(nestedJSON);
+            json.put("und",jsonArray);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return json;
     }
 
     private JSONObject buildDescriptionJSON(String description) {
@@ -233,7 +259,6 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         return json;
     }
 
@@ -241,7 +266,6 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         JSONObject json = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         JSONObject nestedJSON = new JSONObject();
-
         try {
             nestedJSON.put("input_format","GEOFIELD_INPUT_WKT");
             nestedJSON.put("geom","POINT("+latitude+" "+longitude+")");
@@ -251,7 +275,6 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         return json;
     }
 

@@ -20,7 +20,7 @@ import org.apache.http.util.EntityUtils;
 /**
  * Created by giuseppe on 15/05/15.
  */
-public class FragmentLogout extends Fragment implements Costanti{
+public class FragmentLogout extends FragmentButton implements Costanti{
     private String sessid,session_name,token;
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
