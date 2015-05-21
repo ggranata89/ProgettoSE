@@ -1,7 +1,11 @@
 package com.example.ricky.mycity;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,9 +15,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -33,6 +40,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,6 +51,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by ricky on 2/20/15.
@@ -53,6 +63,7 @@ public class FragmentMap extends Fragment {
     private double latitude, longitude;
     private String title, user, body, date, priority, category;
     private Long timestamp;
+    private ImageView ivImage;
 
 
     @Override
@@ -88,6 +99,8 @@ public class FragmentMap extends Fragment {
     private class doLoadLocation extends AsyncTask<Void, Void, HashMap<String, Report>> implements Costanti {
         public HashMap<String, Report> reportMap = new HashMap<>();
         Report report = null;
+        String image = null;
+        URL url;
 
         @Override
         protected HashMap<String, Report> doInBackground(Void... params) {
@@ -123,7 +136,9 @@ public class FragmentMap extends Fragment {
                     latitude = Double.parseDouble(jsonLocation.getJSONArray("und").getJSONObject(0).getString("lat"));
                     longitude = Double.parseDouble(jsonLocation.getJSONArray("und").getJSONObject(0).getString("lon"));
                     user = jsonObject.getString("name");
-                    reportMap.put(title, new Report(title, body, new LatLng(latitude, longitude), priority, category, user, date));
+                    image = jsonObject.getJSONObject("field_img_report").getJSONArray("und").getJSONObject(0).getString("filename");
+                    Log.d("PARSING JSON", "IMAGE: " + image);
+                    reportMap.put(title, new Report(title, body, new LatLng(latitude, longitude), priority, category, user, date, image));
 
                 }
 
@@ -216,6 +231,9 @@ public class FragmentMap extends Fragment {
                             TextView tvPriority = (TextView) v.findViewById(R.id.tv_report_priority);
                             TextView tvUser = (TextView) v.findViewById(R.id.tv_user);
                             TextView tvDate = (TextView) v.findViewById(R.id.tv_report_date);
+                            Button button = (Button) v.findViewById(R.id.img_button);
+                            ivImage = (ImageView) v.findViewById(R.id.iv_image);
+                            Bitmap bitmap = null;
 
                             Iterator iterator = reportMap.keySet().iterator();
 
@@ -224,6 +242,14 @@ public class FragmentMap extends Fragment {
                                 report = (Report) reportMap.get(key);
 
                                 if (marker.getPosition().latitude == report.getLocation().latitude && marker.getPosition().longitude == report.getLocation().longitude) {
+                                    try {
+                                        bitmap = new GetImage().execute("http://46.101.148.74/sites/default/files/" + report.getImage()).get();
+                                        Log.d("FROM THREAD", "IMAGE: " + report.getImage());
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    }
 
                                     tvLat.setText("Latitude: " + report.getLocation().latitude);
                                     tvLng.setText("Longitude: " + report.getLocation().longitude);
@@ -232,6 +258,17 @@ public class FragmentMap extends Fragment {
                                     tvPriority.setText("Priority: " + report.getPriority());
                                     tvUser.setText("User: " + report.getUser());
                                     tvDate.setText("Date: " + report.getDate());
+                                    /*button.setOnClickListener(new View.OnClickListener(){
+                                        public void onClick(View v) {
+                                            new GetImage().execute("http://46.101.148.74/sites/default/files/" + image);
+                                            Dialog settingsDialog = new Dialog(getActivity());
+                                            settingsDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+                                            settingsDialog.setContentView(getActivity().getLayoutInflater().inflate(R.layout.dialog_layout, null));
+                                            settingsDialog.show();
+                                        }
+
+                                    });*/
+                                    ivImage.setImageBitmap(bitmap);
                                 }
                             }
                             return v;
@@ -242,6 +279,65 @@ public class FragmentMap extends Fragment {
             }
         }
    }
+
+    /*public void onClick(View view){
+        Dialog settingsDialog = new Dialog(getActivity());
+        settingsDialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        settingsDialog.setContentView(getActivity().getLayoutInflater().inflate(R.layout.dialog_layout, null));
+        //settingsDialog.setContentView(view.findViewById(R.layout.dialog_layout));
+        settingsDialog.show();
+    }*/
+
+    private class GetImage extends AsyncTask<String, Void, Bitmap>{
+
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            Bitmap bitmap = null;
+            try {
+                URL url = new URL(strings[0]);
+                Log.d("THREAD", "Url passato: " + strings[0]);
+                bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            ivImage.setImageBitmap(bitmap);
+        }
+    }
+
+    /*private class DownloadImage extends AsyncTask<String, Void, Bitmap>{
+        private ImageView imageView;
+
+        private DownloadImage(ImageView imageView){
+            this.imageView = imageView;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            Log.d("BITMAP DOWNLOAD", mIcon11.toString());
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            Log.d("BITMAP POST", result.toString());
+            imageView.setImageBitmap(result);
+        }
+    }*/
 }
 
 

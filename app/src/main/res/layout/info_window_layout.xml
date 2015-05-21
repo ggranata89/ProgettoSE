@@ -40,11 +40,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <Button
+        android:id="@+id/img_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CLICCA!"/>
 
 
     <ImageView
-        android:id="@+id/infocontent_iv_image"
-        android:src = "@drawable/report"
+        android:id="@+id/iv_image"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_alignParentTop="true"
