@@ -212,14 +212,8 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         JSONArray jsonArray = new JSONArray();
         JSONObject nestedJSON = new JSONObject();
         try {
-            nestedJSON.put("filename","prova2_1.jpg");
-            nestedJSON.put("uri","/var/www/html/sites/default/files/prova2_1_0.jpg");
-            nestedJSON.put("filemime","image/jpeg");
-            nestedJSON.put("status","1");
-            //nestedJSON.put("summary","");
-            //nestedJSON.put("format","filtered_html");
-            //nestedJSON.put("safe_value","<p>"+description+"</p>");
-            //nestedJSON.put("safe_summary","");
+            nestedJSON.put("fid","26");
+            nestedJSON.put("uri","http://46.101.148.74/rest/file/26");
             jsonArray.put(nestedJSON);
             json.put("und",jsonArray);
         } catch (JSONException e) {

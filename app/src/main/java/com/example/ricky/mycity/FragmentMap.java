@@ -76,11 +76,8 @@ public class FragmentMap extends Fragment {
         Log.d("FRAGMENT MAP LONGITUDE", "longitude: " + longitude);
 
         googleMap = mapView.getMap();
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(37.75, 15.00), 10));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 10));
         googleMap.setMyLocationEnabled(true);
-        googleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(latitude, longitude))
-                .title("My Current Position"));
 
         //Async task to load location from webservice
         new doLoadLocation().execute();
