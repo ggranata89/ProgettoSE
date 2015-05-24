@@ -1,7 +1,9 @@
 package com.example.ricky.mycity;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,9 +29,10 @@ public class FragmentLogout extends FragmentButton implements Costanti{
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.section_label);
         textView.setText("Logout Section");
-        sessid = getActivity().getIntent().getStringExtra("sessid");
-        session_name = getActivity().getIntent().getStringExtra("session_name");
-        token = getActivity().getIntent().getStringExtra("token");
+        SharedPreferences user_details = this.getActivity().getSharedPreferences("user_details", Context.MODE_PRIVATE);
+        sessid = user_details.getString("sessid","");
+        session_name = user_details.getString("session_name","");
+        token = user_details.getString("token", "");
         new doLogout().execute();
         return rootView;
     }
@@ -61,10 +64,13 @@ public class FragmentLogout extends FragmentButton implements Costanti{
             return jsonResponse.substring(1,jsonResponse.length()-1);
         }
         protected void onPostExecute(String response){
-            if(response.equals("true")){
-                Intent intent = new Intent(getActivity(),LoginActivity.class);
-                startActivity(intent);
-            }
+            Log.v("LOGOUT-RESPONSE",response);
+            SharedPreferences.Editor user_details = getActivity().getSharedPreferences("user_details",Context.MODE_PRIVATE).edit();
+            user_details.clear();
+            user_details.commit();
+            Intent intent = new Intent(getActivity(),LoginActivity.class);
+            startActivity(intent);
+
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.ricky.mycity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -44,9 +45,14 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     public void init(Bundle savedInstanceState){
 
         getMyLocation();
-        Intent intent = getIntent();
-        String user = intent.getStringExtra(LoginActivity.USER_DETAILS);
-        img_url = intent.getStringExtra(LoginActivity.USER_IMAGE);
+        //Intent intent = getIntent();
+        //String user = intent.getStringExtra(LoginActivity.USER_DETAILS);
+        //img_url = intent.getStringExtra(LoginActivity.USER_IMAGE);
+
+        SharedPreferences user_details = getSharedPreferences("user_details",MODE_PRIVATE);
+
+        String user = user_details.getString("user","");
+        img_url = user_details.getString("user_image","");
 
         JSONObject jsonObject = null;
         JSONObject jsonObject1 = null;

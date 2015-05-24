@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -45,7 +46,8 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        //setContentView(R.layout.activity_login);
+        new getLogin().execute();
     }
 
     @Override
@@ -117,11 +119,18 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
             if(session_name != null && sessid != null) {
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 
-                intent.putExtra("session_name", session_name);
+                /*intent.putExtra("session_name", session_name);
                 intent.putExtra("sessid", sessid);
                 intent.putExtra("token", token);
                 intent.putExtra(USER_IMAGE, img_url);
-                intent.putExtra(USER_DETAILS, user);
+                intent.putExtra(USER_DETAILS, user);*/
+                SharedPreferences.Editor editor = getSharedPreferences("user_details",MODE_PRIVATE).edit();
+                editor.putString("session_name",session_name);
+                editor.putString("sessid",sessid);
+                editor.putString("token",token);
+                editor.putString("user_image",img_url);
+                editor.putString("user",user);
+                editor.commit();
 
                 startActivity(intent);
             }else{
@@ -167,5 +176,49 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
 
         startActivity(intent);
 
+    }
+
+    private class getLogin extends AsyncTask<Void,Void,String> {
+        String session_name,sessid,token;
+        String web_service_token;
+
+        SharedPreferences user_details = getSharedPreferences("user_details",MODE_PRIVATE);
+
+        public getLogin() {
+            session_name = user_details.getString("session_name", "");
+            sessid = user_details.getString("sessid","");
+            token = user_details.getString("token","");
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(TOKEN_URI);
+
+            try{
+                httpPost.setHeader("Content-Type","application/json");
+                httpPost.setHeader("Cookie",session_name+"="+sessid);
+                HttpResponse httpResponse = httpClient.execute(httpPost);
+
+                web_service_token = EntityUtils.toString(httpResponse.getEntity());
+
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            return web_service_token;
+        }
+
+        protected  void onPostExecute(String ws_token){
+            Log.v("MyToken",token);
+            Log.v("web_service_token",ws_token);
+            if(token.equals(ws_token)){
+                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                startActivity(intent);
+            }
+            else
+                setContentView(R.layout.activity_login);
+
+        }
     }
 }

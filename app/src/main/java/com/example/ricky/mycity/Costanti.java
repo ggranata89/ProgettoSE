@@ -10,6 +10,8 @@ public interface Costanti {
     public static String LOGOUT_URI = "http://46.101.148.74/rest/user/logout";
     public static String NODE_URI = "http://46.101.148.74/rest/node/";
     public static String FILE_URI = "http://46.101.148.74/rest/file/";
+    public static String TOKEN_URI = "http://46.101.148.74/services/session/token";
+
 
 
     public static final long MINIMUM_DISTANCE_CHANGE_FOR_UPDATES = 1; // in metri

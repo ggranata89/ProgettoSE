@@ -1,7 +1,9 @@
 package com.example.ricky.mycity;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -62,9 +64,10 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         PriorityGroup = (RadioGroup) rootView.findViewById(R.id.Priority_RadioGroup);
         CategoryGroup = (RadioGroup) rootView.findViewById(R.id.Category_RadioGroup);
 
-        sessid = getActivity().getIntent().getStringExtra("sessid");
-        session_name = getActivity().getIntent().getStringExtra("session_name");
-        token = getActivity().getIntent().getStringExtra("token");
+        SharedPreferences user_details = this.getActivity().getSharedPreferences("user_details", Context.MODE_PRIVATE);
+        sessid = user_details.getString("sessid","");
+        session_name = user_details.getString("session_name","");
+        token = user_details.getString("token","");
 
         Button b = (Button) rootView.findViewById(R.id.send_report);
         b.setOnClickListener(this);
