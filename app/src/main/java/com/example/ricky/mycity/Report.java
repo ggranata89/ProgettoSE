@@ -14,8 +14,10 @@ public class Report {
     private String user;
     private String date;
     private String image;
+    private String uid;
+    private String status;
 
-    public Report(String title,String body, LatLng location, String priority,String category,String user,String date, String image){
+    public Report(String title,String body, LatLng location, String priority,String category,String user,String uid,String date, String image,String status){
         this.title = title;
         this.body = body;
         this.location = location;
@@ -24,6 +26,8 @@ public class Report {
         this.user = user;
         this.date = date;
         this.image = image;
+        this.uid = uid;
+        this.status = status;
     }
 
     public String getTitle(){ return title;}
@@ -69,5 +73,11 @@ public class Report {
     public String getDate(){
         return date;
     }
+
+    public String getUid(){ return uid;}
+
+    public String getStatus(){ return status;}
+
+    public void setStatus(String status){ this.status=status;}
 
 }

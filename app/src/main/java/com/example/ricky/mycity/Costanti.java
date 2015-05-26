@@ -11,6 +11,7 @@ public interface Costanti {
     public static String NODE_URI = "http://46.101.148.74/rest/node/";
     public static String FILE_URI = "http://46.101.148.74/rest/file/";
     public static String TOKEN_URI = "http://46.101.148.74/services/session/token";
+    public static String MY_REPORTS_URI = "http://46.101.148.74/rest/views/myreportslist";
 
 
 

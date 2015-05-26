@@ -40,7 +40,7 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
     public final static String USER_DETAILS = "com.example.ricky.mycity.USER_DETAILS";
     public final static String USER_IMAGE = "com.example.ricky.mycity.USER_IMAGE";
 
-    private String sessid, session_name, token, user, img_url;
+    private String sessid, session_name, token, user, img_url,uid;
     private boolean isConnected = false;
 
     @Override
@@ -100,8 +100,10 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
                 sessid = jsonObj.getString("sessid");
                 token = jsonObj.getString("token");
                 user = jsonObj.getString("user");
+
                 JSONObject userObj = new JSONObject(user);
                 String str = userObj.getString("picture");
+                uid = userObj.getString("uid");
                 //String picture = jsonObj.getString("picture");
                 JSONObject jsonObject1 = new JSONObject(str);
                 img_url = jsonObject1.getString("url");
@@ -130,6 +132,7 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
                 editor.putString("token",token);
                 editor.putString("user_image",img_url);
                 editor.putString("user",user);
+                editor.putString("uid",uid);
                 editor.commit();
 
                 startActivity(intent);
