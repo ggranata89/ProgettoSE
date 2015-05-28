@@ -17,6 +17,9 @@ import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -27,9 +30,6 @@ import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
-
-import com.gc.materialdesign.views.ButtonFloat;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -97,7 +97,30 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
 
         cameraButton = (ImageButton) rootView.findViewById(R.id.camera);
         cameraButton.setOnClickListener(this);
+
+        setHasOptionsMenu(true);
+
         return rootView;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_send:
+                title = tvTitle.getText().toString().trim();
+                description = tvDescription.getText().toString().trim();
+                new doSendReport().execute();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(
+            Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_report, menu);
     }
 
     public void sendMyReport(){

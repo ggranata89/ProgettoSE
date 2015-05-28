@@ -216,6 +216,7 @@
         android:id="@+id/send_report"
         android:onClick="sendReport"
         android:background="#1E88E5"
+        android:visibility="invisible"
         android:layout_gravity="center_horizontal"/>
     <!--<com.gc.materialdesign.views.ButtonFloat
         android:id="@+id/send_report"
