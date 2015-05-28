@@ -12,16 +12,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-/**
- * Created by giuseppe on 26/05/15.
- */
 public class JSONParser {
 
     private JSONObject jsonObject;
     private String title,body,priority,category,user,image,date,uid,status;
     private double latitude;
     private double longitude;
-    private Long timestamp;
+    private long timestamp;
 
     public JSONParser(JSONObject json){
         this.jsonObject = json;
@@ -87,7 +84,8 @@ public class JSONParser {
             priority = jsonObject.getJSONObject("field_priority").getJSONArray("und").getJSONObject(0).getString("value");
             priority = getPriorityByIndex(priority);
 
-            category = jsonObject.getJSONObject("field_priority").getJSONArray("und").getJSONObject(0).getString("value");
+            category = jsonObject.getJSONObject("field_category").getJSONArray("und").getJSONObject(0).getString("value");
+            Log.d("FROM JSONPARSER","CATEGORY: " + category);
             category = getCategoryByIndex(category);
             
             status = jsonObject.getJSONObject("field_status").getJSONArray("und").getJSONObject(0).getString("value");

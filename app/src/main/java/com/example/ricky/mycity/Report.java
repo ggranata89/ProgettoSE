@@ -2,9 +2,6 @@ package com.example.ricky.mycity;
 
 import com.google.android.gms.maps.model.LatLng;
 
-/**
- * Created by giuseppe on 07/05/15.
- */
 public class Report {
     private String title;
     private String body;

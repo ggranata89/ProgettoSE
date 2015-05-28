@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -23,11 +22,13 @@ import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.net.URL;
-import static com.example.ricky.mycity.Costanti.*;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
 import it.neokree.materialnavigationdrawer.elements.listeners.MaterialAccountListener;
+
+import static com.example.ricky.mycity.Costanti.MINIMUM_DISTANCE_CHANGE_FOR_UPDATES;
+import static com.example.ricky.mycity.Costanti.MINIMUM_TIME_BETWEEN_UPDATES;
 
 public class MainActivity extends MaterialNavigationDrawer implements MaterialAccountListener {
 
@@ -38,6 +39,7 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     private LocationManager locationManager = null;
     private double latitudine, longitudine;
     private FragmentMap fragmentMap = new FragmentMap();
+    private FragmentReport fragmentReport = new FragmentReport();
     private boolean isGPSEnabled, isNetworkEnabled;
     private Location location;
 
@@ -45,17 +47,13 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     public void init(Bundle savedInstanceState){
 
         getMyLocation();
-        //Intent intent = getIntent();
-        //String user = intent.getStringExtra(LoginActivity.USER_DETAILS);
-        //img_url = intent.getStringExtra(LoginActivity.USER_IMAGE);
 
-        SharedPreferences user_details = getSharedPreferences("user_details",MODE_PRIVATE);
+        SharedPreferences user_details = getSharedPreferences("userDetails",MODE_PRIVATE);
 
         String user = user_details.getString("user","");
         img_url = user_details.getString("user_image","");
 
         JSONObject jsonObject = null;
-        JSONObject jsonObject1 = null;
         try {
             jsonObject = new JSONObject(user);
             name = jsonObject.getString("name");
@@ -63,22 +61,17 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-//        Log.d("FROM MAIN - URL", img_url);
-
         if(img_url!=null)
             new LoadImage().execute(img_url);
 
-        //Log.d("MAIN BITMAP", bitmap.toString());
         //Account
         myAccount = new MaterialAccount(this.getResources(), name, mail, R.drawable.default_img, R.drawable.background);
         this.addAccount(myAccount);
 
         this.setAccountListener(this);
-        this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, new FragmentReport()));
+        this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, fragmentReport));
         this.addSection(newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, fragmentMap));
         this.addSection(newSection(getString(R.string.mie_segnalazioni), R.mipmap.profile, new FragmentMyReports()).setSectionColor(Color.parseColor("#FFA500")));
-        //this.addSubheader("Categoria");
         this.addDivisor();
         this.addSection(newSection(getString(R.string.profile), R.mipmap.profile, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
         this.addSection(newSection(getString(R.string.info), R.mipmap.info, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
@@ -90,25 +83,11 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         this.addBottomSection(newSection(getString(R.string.bottom), R.mipmap.settings, new Intent(this,Settings.class)));
     }
 
-    public double getLatitude(){
-        return latitudine;
-    }
-
-    public double getLongitude(){
-        return longitudine;
-    }
-
     private void getMyLocation() {
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        /*locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                MINIMUM_TIME_BETWEEN_UPDATES,
-                MINIMUM_DISTANCE_CHANGE_FOR_UPDATES,
-                new MyLocationListener());*/
 
         // getting GPS status
-        isGPSEnabled = locationManager
-                .isProviderEnabled(LocationManager.GPS_PROVIDER);
+        isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         // getting network status
         isNetworkEnabled = locationManager
@@ -122,7 +101,6 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
                         LocationManager.NETWORK_PROVIDER,
                         MINIMUM_TIME_BETWEEN_UPDATES,
                         MINIMUM_DISTANCE_CHANGE_FOR_UPDATES, new MyLocationListener());
-                Log.d("Network", "Network Enabled");
                 if (locationManager != null) {
                     location = locationManager
                             .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
@@ -141,8 +119,7 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
                             MINIMUM_DISTANCE_CHANGE_FOR_UPDATES, new MyLocationListener());
                     Log.d("GPS", "GPS Enabled");
                     if (locationManager != null) {
-                        location = locationManager
-                                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                         if (location != null) {
                             latitudine = location.getLatitude();
                             longitudine = location.getLongitude();
@@ -150,25 +127,11 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
                     }
                 }
             }
-        /*Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        String best = locationManager.getBestProvider(criteria, true);
-        locationManager.requestLocationUpdates(best, MINIMUM_TIME_BETWEEN_UPDATES, MINIMUM_DISTANCE_CHANGE_FOR_UPDATES, new MyLocationListener());
-        Location location = locationManager.getLastKnownLocation(best);
-        Log.d("LOCATION", "location: " + location);
-
-        if (location != null) {
-            latitudine = location.getLatitude();
-            longitudine = location.getLongitude();
-            Log.d("MAIN LATITUDE", "latitude: " + latitudine);
-            Log.d("MAIN LONGITUDE", "longitude: " + longitudine);
-        } else {
-            //TODO
-        }*/
             Bundle bundle = new Bundle();
             bundle.putDouble("latitude", latitudine);
             bundle.putDouble("longitude", longitudine);
             fragmentMap.setArguments(bundle);
+            fragmentReport.setArguments(bundle);
         }
     }
 
@@ -214,22 +177,12 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         protected void onPostExecute(Bitmap image) {
 
             if(image != null){
-                //mg.setImageBitmap(image);
-                /*runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // removeAccount(account);
-                        notifyAccountDataChanged();
-                    }
-                });*/
                 myAccount.setPhoto(bitmap);
-                Log.d("FROM THREAD MAIN BITMAP", bitmap.toString());
                 pDialog.dismiss();
 
             }else{
-
                 pDialog.dismiss();
-                Toast.makeText(MainActivity.this, "Image Does Not exist or Network Error", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "Image Does Not exist or Network Error", Toast.LENGTH_SHORT).show();
 
             }
         }
@@ -237,30 +190,19 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
 
     private class MyLocationListener implements LocationListener {
         public void onLocationChanged(Location location) {
-		           /* String message = String.format(
-		                    "New Location \n Longitude: %1$s \n Latitude: %2$s",
-		                    location.getLongitude(), location.getLatitude()
-		            );
-		            Toast.makeText(WarningActivity.this, message, Toast.LENGTH_LONG).show();*/
             latitudine = location.getLatitude();
             longitudine = location.getLongitude();
-            Log.d("ON LOCATION CHANGED", "Lat: " + latitudine + " Lon: " + longitudine);
         }
 
         public void onStatusChanged(String s, int i, Bundle b) {
-		            /*Toast.makeText(WarningActivity.this, "Provider status changed",
-		                    Toast.LENGTH_LONG).show();*/
+            //TODO
         }
 
         public void onProviderDisabled(String s) {
-		            /*Toast.makeText(WarningActivity.this,
-		                    "Provider disabled by the user. GPS turned off",
-		                    Toast.LENGTH_LONG).show();*/
+            //TODO
         }
         public void onProviderEnabled(String s) {
-		            /*Toast.makeText(WarningActivity.this,
-		                    "Provider enabled by the user. GPS turned on",
-		                    Toast.LENGTH_LONG).show();*/
+            //TODO
         }
     }
 }

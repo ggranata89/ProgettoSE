@@ -1,18 +1,19 @@
 package com.example.ricky.mycity;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.renderscript.RenderScript;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,18 +23,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,38 +40,41 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 
-/**
- * Created by giuseppe on 15/05/15.
- */
-public class FragmentReport extends FragmentButton implements Costanti,View.OnClickListener {
-    private String sessid,session_name,token;
+public class FragmentReport extends Fragment implements Costanti,View.OnClickListener {
+    private String sessid,session_name,token, name,fid;
     private String title,description,encoded_image;
-    String path = "";
-    int priority_index,category_index;
-    int lid = 40;
-    EditText tvTitle,tvDescription;
-    RadioGroup CategoryGroup,PriorityGroup;
+    private double latitude, longitude;
+    private String path = "";
+    private int priority_index,category_index;
+    private EditText tvTitle,tvDescription;
+    private RadioGroup CategoryGroup,PriorityGroup;
+    private Uri fileUri;
+    private ImageButton cameraButton;
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_blank, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_report, container, false);
 
         tvTitle = (EditText) rootView.findViewById(R.id.report_title);
         tvDescription = (EditText) rootView.findViewById(R.id.report_body);
         PriorityGroup = (RadioGroup) rootView.findViewById(R.id.Priority_RadioGroup);
         CategoryGroup = (RadioGroup) rootView.findViewById(R.id.Category_RadioGroup);
 
-        SharedPreferences user_details = this.getActivity().getSharedPreferences("user_details", Context.MODE_PRIVATE);
+        SharedPreferences user_details = this.getActivity().getSharedPreferences("userDetails", Context.MODE_PRIVATE);
         sessid = user_details.getString("sessid","");
-        session_name = user_details.getString("session_name","");
-        token = user_details.getString("token","");
+        session_name = user_details.getString("session_name", "");
+        token = user_details.getString("token", "");
+
+        Bundle args = getArguments();
+        latitude = args.getDouble("latitude", 0.0);
+        longitude = args.getDouble("longitude", 0.0);
 
         Button b = (Button) rootView.findViewById(R.id.send_report);
         b.setOnClickListener(this);
 
-        Button cameraButton = (Button) rootView.findViewById(R.id.camera);
+        cameraButton = (ImageButton) rootView.findViewById(R.id.camera);
         cameraButton.setOnClickListener(this);
         return rootView;
     }
@@ -84,43 +86,104 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
             case R.id.send_report:
                 title = tvTitle.getText().toString().trim();
                 description = tvDescription.getText().toString().trim();
-                Log.v("REPORT-TITLE", title);
-                Log.v("REPORT-DESCRIPTION", description);
                 int radioButtonID = PriorityGroup.getCheckedRadioButtonId();
                 View radioButton = PriorityGroup.findViewById(radioButtonID);
                 priority_index = PriorityGroup.indexOfChild(radioButton);
-                Log.v("REPORT-Priority", String.valueOf(priority_index));
-
                 radioButtonID = CategoryGroup.getCheckedRadioButtonId();
                 radioButton = CategoryGroup.findViewById(radioButtonID);
                 category_index = CategoryGroup.indexOfChild(radioButton);
-                Log.v("REPORT-Category", String.valueOf(category_index));
-                Log.v("Photo", path);
                 new doSendReport().execute();
                 break;
 
             case R.id.camera:
-                Log.v("REPORT", "Image button pressed");
-
-                File destination = new File(Environment
-                        .getExternalStorageDirectory(), "report_photo.jpg");
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(destination));
-                path = Uri.fromFile(destination).getPath();
-                Log.v("Photo2", path);
-                startActivityForResult(intent, 2);
+                fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // create a file to save the image
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+
+                // start the image capture Intent
+                startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
                 break;
             }
         }
 
-        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    private Uri getOutputMediaFileUri(int type){
+        return Uri.fromFile(getOutputMediaFile(type));
+    }
+
+    /** Create a File for saving an image or video */
+    private File getOutputMediaFile(int type){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "MyCity");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                Log.d("MyCity Album", "failed to create directory");
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE){
+            name = "IMG_"+ timeStamp + ".jpg";
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    name);
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
+
+        /*public void onActivityResult(int requestCode, int resultCode, Intent data) {
             super.onActivityResult(requestCode, resultCode, data);
             encoded_image = createEncodedImage(path);
             new doUploadImage().execute(encoded_image);
-            Log.v("PHOTO","Foto acquisita correttamente");
+        }*/
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == getActivity().RESULT_OK) {
+                // Image captured and saved to fileUri specified in the Intent
+                Toast.makeText(getActivity(), "Image saved to:\n" + this.fileUri, Toast.LENGTH_LONG).show();
+                setBackgroundIconCamera(fileUri.getPath());
+                path = fileUri.getPath();
+                encoded_image = createEncodedImage(path);
+                new doUploadImage().execute(encoded_image);
+            } else if (resultCode == getActivity().RESULT_CANCELED) {
+                // User cancelled the image capture
+            } else {
+                // Image capture failed, advise user
+            }
         }
+    }
+
+    public void setBackgroundIconCamera(String path){
+        cameraButton = (ImageButton) getActivity().findViewById(R.id.camera);
+        Drawable d = null;
+        if(path != null){
+            d = Drawable.createFromPath(path);
+            Bitmap bitmap = ((BitmapDrawable) d).getBitmap();
+            // Scale it to 50 x 50
+            Drawable dr = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 96, 96, true));
+            //d = Drawable.createFromPath(path);
+            //d.setBounds(0, 0, 6, 6);
+            int sdk = android.os.Build.VERSION.SDK_INT;
+            if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                cameraButton.setBackgroundDrawable(dr);
+            } else {
+                cameraButton.setBackground(dr);
+            }
+        }
+    }
 
     private String createEncodedImage(String path) {
 
@@ -141,11 +204,8 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
             HttpConnectionParams.setConnectionTimeout(mHttpParams, 10000);
             HttpConnectionParams.setSoTimeout(mHttpParams, 10000);
 
-
             HttpPost httppost = new HttpPost(FILE_URI);
             httppost.setHeader("Content-type", "application/json");
-
-
             StringEntity se;
             try {
 
@@ -154,24 +214,21 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
                 JSONObject dataOut = new JSONObject();
                 dataOut.put("file", encoded_image);
 
-                dataOut.put("filename","prova2.jpg");
-                //dataOut.put("filemime","image/jpeg");
-                dataOut.put("target_uri","/var/www/html/sites/default/files/prova2.jpg");
+                dataOut.put("filename", name);
+                dataOut.put("target_uri", "/var/www/html/sites/default/files/"+name);
 
-                Log.d("IMAGE", String.valueOf(dataOut));
-                Log.d("ENCODED-IMAGE",encoded_image);
                 se = new StringEntity(dataOut.toString());
                 httppost.setEntity(se);
-                HttpResponse response = mHttpClient.execute(httppost);
-                String logResponse = EntityUtils.toString(response.getEntity());
-                Log.d("FILE_RESPONSE", logResponse);
+                HttpResponse httpResponse = mHttpClient.execute(httppost);
+                String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
+                Log.d("FROM FRAGMENT RESPONSE", "JSONRESPONSE: " + jsonResponse);
+                JSONObject jsonObject = new JSONObject(jsonResponse);
+                fid = jsonObject.getString("fid");
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
         }
-
-
     }
 
     private class doSendReport extends AsyncTask<Void,Void,Void>{
@@ -192,17 +249,14 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
                 jsonObject.put("body", buildDescriptionJSON(description));
                 jsonObject.put("field_priority", buildJSON(String.valueOf(priority_index + 1)));
                 jsonObject.put("field_category",buildJSON(String.valueOf(category_index + 1)));
-                jsonObject.put("field_report_location",buildLocationJSON("37.553900", "15.010071"));
-                jsonObject.put("field_img_report",buildImageField("prova2_1.jpg"));
-
-                Log.v("JSON-BUILD", jsonObject.toString());
+                jsonObject.put("field_report_location",buildLocationJSON(String.valueOf(latitude), String.valueOf(longitude)));
+                jsonObject.put("field_img_report", buildImageField(name));
 
                 StringEntity stringEntity = new StringEntity(jsonObject.toString());
                 httpPost.setEntity(stringEntity);
                 HttpResponse httpResponse = httpClient.execute(httpPost);
                 String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
-                Log.v("REPORT-SEND", jsonResponse);
-
+                Log.d("DO SEND REPORT", jsonResponse);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -215,8 +269,8 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         JSONArray jsonArray = new JSONArray();
         JSONObject nestedJSON = new JSONObject();
         try {
-            nestedJSON.put("fid","26");
-            nestedJSON.put("uri","http://46.101.148.74/rest/file/26");
+            nestedJSON.put("fid",fid);
+            nestedJSON.put("uri","http://46.101.148.74/rest/file/"+fid);
             jsonArray.put(nestedJSON);
             json.put("und",jsonArray);
         } catch (JSONException e) {
@@ -232,10 +286,6 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         JSONObject nestedJSON = new JSONObject();
         try {
             nestedJSON.put("value",description);
-            //nestedJSON.put("summary","");
-            //nestedJSON.put("format","filtered_html");
-            //nestedJSON.put("safe_value","<p>"+description+"</p>");
-            //nestedJSON.put("safe_summary","");
             jsonArray.put(nestedJSON);
             json.put("und",jsonArray);
         } catch (JSONException e) {
@@ -245,13 +295,11 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         return json;
     }
 
-
     private JSONObject buildJSON(String value) {
         JSONObject json = new JSONObject();
         JSONObject nestedJSON = new JSONObject();
         try {
             nestedJSON.put("value",value);
-
             json.put("und",nestedJSON);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -265,7 +313,7 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         JSONObject nestedJSON = new JSONObject();
         try {
             nestedJSON.put("input_format","GEOFIELD_INPUT_WKT");
-            nestedJSON.put("geom","POINT("+latitude+" "+longitude+")");
+            nestedJSON.put("geom","POINT("+longitude+" "+latitude+")");
             jsonArray.put(nestedJSON);
             json.put("und",jsonArray);
 
@@ -274,6 +322,4 @@ public class FragmentReport extends FragmentButton implements Costanti,View.OnCl
         }
         return json;
     }
-
-
 }

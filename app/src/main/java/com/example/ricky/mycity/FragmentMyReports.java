@@ -1,14 +1,12 @@
 package com.example.ricky.mycity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,33 +15,26 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 
 
-public class FragmentMyReports extends FragmentButton implements Costanti {
+public class FragmentMyReports extends Fragment implements Costanti {
     private TableLayout tableLayout;
-    private String uid,session_name,sessid,token;
+    private String uid;
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_my_reports, container, false);
         tableLayout = (TableLayout) rootView.findViewById(R.id.TableLayout);
-        SharedPreferences user_details = getActivity().getSharedPreferences("user_details", Context.MODE_PRIVATE);
-        session_name= user_details.getString("session_name","");
-        sessid = user_details.getString("sessid","");
-        token = user_details.getString("token","");
+        SharedPreferences user_details = getActivity().getSharedPreferences("userDetails", Context.MODE_PRIVATE);
         uid = user_details.getString("uid","");
         new FillTable().execute();
 
@@ -58,28 +49,21 @@ public class FragmentMyReports extends FragmentButton implements Costanti {
             HttpClient httpClient = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet(REPORT_URI);
             String jsonResponse;
-
             try {
 
                 HttpResponse httpResponse = httpClient.execute(httpGet);
                 jsonResponse = EntityUtils.toString(httpResponse.getEntity());
-                Log.d("MainActivity-JSON", jsonResponse);
                 JSONArray jsonArray = new JSONArray(jsonResponse);
-                Log.v("JSON LENGTH", String.valueOf(jsonArray.length()));
                 for (int i = 0; i < jsonArray.length(); i++) {
-
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     JSONParser jsonParser = new JSONParser(jsonObject);
                     Report r = jsonParser.getReportFromJSON();
-                    Log.v("status",r.getStatus());
                     if(r.getUid().equals(uid))
                         myReportsMap.put(r.getTitle(),r);
                 }
             }catch(Exception e){
                 e.printStackTrace();
             }
-
-
             return myReportsMap;
         }
 
@@ -89,7 +73,7 @@ public class FragmentMyReports extends FragmentButton implements Costanti {
                 Iterator iterator = myReports.keySet().iterator();
                 while(iterator.hasNext()){
                     String key = iterator.next().toString();
-                    report = (Report) myReports.get(key);
+                    report = myReports.get(key);
                     TableRow row = new TableRow(getActivity());
                     TableRow.LayoutParams params1 =new TableRow.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT,1.0f);
                     TableRow.LayoutParams params2=new TableRow.LayoutParams(TableRow.LayoutParams.FILL_PARENT, TableRow.LayoutParams.WRAP_CONTENT);

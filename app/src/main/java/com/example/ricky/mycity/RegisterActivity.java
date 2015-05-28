@@ -1,19 +1,15 @@
 package com.example.ricky.mycity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.gc.materialdesign.widgets.Dialog;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -24,12 +20,10 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
-/**
- * Created by giuseppe on 05/05/15.
- */
+
 public class RegisterActivity extends ActionBarActivity implements Costanti{
 
-    private String sessid, session_name,token;
+    EditText username, password, email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +55,9 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
             HttpPost httpPost = new HttpPost(REGISTER_URI);
 
             try {
-                EditText username = (EditText) findViewById(R.id.reg_username);
-                EditText password = (EditText) findViewById(R.id.reg_password);
-                EditText email = (EditText) findViewById(R.id.reg_email);
-
-                Log.d("RegisterActivity", "New Registration request: " + username + " " + password + " " + email);
+                username = (EditText) findViewById(R.id.reg_username);
+                password = (EditText) findViewById(R.id.reg_password);
+                email = (EditText) findViewById(R.id.reg_email);
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("name", username.getText().toString().trim());
@@ -77,15 +69,9 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
                 Log.d("RegisterActivity", "JSON inviato: " +stringEntity);
                 stringEntity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 
-                //Bisogna inserire il token ma non so perchè funziona
                 httpPost.setEntity(stringEntity);
-
                 HttpResponse httpResponse = httpClient.execute(httpPost);
-
                 String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
-
-                JSONObject jsonObj = new JSONObject(jsonResponse);
-                Log.d("RegisterActivity",jsonResponse);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -98,8 +84,6 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
 
             startActivity(intent);
             Toast.makeText(getApplicationContext(),"Registrazione effettuata con successo", Toast.LENGTH_LONG).show();
-            //Dialog dialog = new Dialog(,"Registrazione effettuata", "Entra in MyCity con le tue credenziali.");
-            //dialog.show();
         }
     }
 

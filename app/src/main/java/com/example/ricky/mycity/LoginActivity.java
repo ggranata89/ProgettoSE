@@ -1,28 +1,21 @@
 package com.example.ricky.mycity;
 
-import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gc.materialdesign.widgets.Dialog;
-import com.gc.materialdesign.widgets.SnackBar;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -37,16 +30,11 @@ import org.json.JSONObject;
 
 public class LoginActivity extends ActionBarActivity implements Costanti{
 
-    public final static String USER_DETAILS = "com.example.ricky.mycity.USER_DETAILS";
-    public final static String USER_IMAGE = "com.example.ricky.mycity.USER_IMAGE";
-
-    private String sessid, session_name, token, user, img_url,uid;
-    private boolean isConnected = false;
+    private String sessid, sessionName, token, user, imgUrl,uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_login);
         new getLogin().execute();
     }
 
@@ -96,7 +84,7 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
 
                 JSONObject jsonObj = new JSONObject(jsonResponse);
 
-                session_name = jsonObj.getString("session_name");
+                sessionName = jsonObj.getString("session_name");
                 sessid = jsonObj.getString("sessid");
                 token = jsonObj.getString("token");
                 user = jsonObj.getString("user");
@@ -104,11 +92,10 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
                 JSONObject userObj = new JSONObject(user);
                 String str = userObj.getString("picture");
                 uid = userObj.getString("uid");
-                //String picture = jsonObj.getString("picture");
                 JSONObject jsonObject1 = new JSONObject(str);
-                img_url = jsonObject1.getString("url");
-                System.out.println("FROM LOGIN " + img_url);
-                Log.d("FROM LOGIN", img_url);
+                imgUrl = jsonObject1.getString("url");
+                System.out.println("FROM LOGIN " + imgUrl);
+                Log.d("FROM LOGIN", imgUrl);
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -118,19 +105,13 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
         }
 
         protected void onPostExecute(Integer result){
-            if(session_name != null && sessid != null) {
+            if(sessionName != null && sessid != null) {
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-
-                /*intent.putExtra("session_name", session_name);
-                intent.putExtra("sessid", sessid);
-                intent.putExtra("token", token);
-                intent.putExtra(USER_IMAGE, img_url);
-                intent.putExtra(USER_DETAILS, user);*/
-                SharedPreferences.Editor editor = getSharedPreferences("user_details",MODE_PRIVATE).edit();
-                editor.putString("session_name",session_name);
+                SharedPreferences.Editor editor = getSharedPreferences("userDetails",MODE_PRIVATE).edit();
+                editor.putString("session_name",sessionName);
                 editor.putString("sessid",sessid);
                 editor.putString("token",token);
-                editor.putString("user_image",img_url);
+                editor.putString("user_image",imgUrl);
                 editor.putString("user",user);
                 editor.putString("uid",uid);
                 editor.commit();
@@ -156,17 +137,14 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
             return true;
 
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        if(activeNetwork != null && activeNetwork.isConnected())
-            return true;
+        return activeNetwork != null && activeNetwork.isConnected();
 
-        return false;
     }
 
     public void doLoginButton(View view){
         if(showStatusConnection())
             new doLogin().execute();
         else {
-            //Toast.makeText(getApplicationContext(),"Connessione Assente", Toast.LENGTH_LONG).show();
             Dialog dialog = new Dialog(this,"Connessione Assente", "Impossibile contattare il server. Controlla la connessione e riprova.");
             dialog.show();
         }
@@ -174,23 +152,19 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
     }
 
     public void doRegisterButton(View view) {
-        // new doRegister().execute();
         Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-
         startActivity(intent);
-
     }
 
     private class getLogin extends AsyncTask<Void,Void,String> {
-        String session_name,sessid,token;
-        String web_service_token;
+        String webServiceToken = null;
 
-        SharedPreferences user_details = getSharedPreferences("user_details",MODE_PRIVATE);
+        SharedPreferences userDetails = getSharedPreferences("userDetails",MODE_PRIVATE);
 
         public getLogin() {
-            session_name = user_details.getString("session_name", "");
-            sessid = user_details.getString("sessid","");
-            token = user_details.getString("token","");
+            sessionName = userDetails.getString("session_name", "");
+            sessid = userDetails.getString("sessid","");
+            token = userDetails.getString("token","");
         }
 
         @Override
@@ -200,22 +174,20 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
 
             try{
                 httpPost.setHeader("Content-Type","application/json");
-                httpPost.setHeader("Cookie",session_name+"="+sessid);
+                httpPost.setHeader("Cookie",sessionName+"="+sessid);
                 HttpResponse httpResponse = httpClient.execute(httpPost);
 
-                web_service_token = EntityUtils.toString(httpResponse.getEntity());
+                webServiceToken = EntityUtils.toString(httpResponse.getEntity());
 
 
             }catch(Exception e){
                 e.printStackTrace();
             }
-            return web_service_token;
+            return webServiceToken;
         }
 
-        protected  void onPostExecute(String ws_token){
-            Log.v("MyToken",token);
-            Log.v("web_service_token",ws_token);
-            if(token.equals(ws_token)){
+        protected  void onPostExecute(String wsToken){
+            if(token.equals(wsToken)){
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                 startActivity(intent);
             }
