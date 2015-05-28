@@ -1,3 +1,4 @@
 <resources>
     <color name="bg_color">#DBFAC8</color>
+    <color name="bg_white">#CCFFFFFF</color>
 </resources>

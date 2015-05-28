@@ -84,10 +84,6 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         this.addBottomSection(newSection(getString(R.string.bottom), R.mipmap.settings, new Intent(this,Settings.class)));
     }
 
-    public void sendReport(View view){
-        fragmentReport.sendMyReport();
-    }
-
     private void getMyLocation() {
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 

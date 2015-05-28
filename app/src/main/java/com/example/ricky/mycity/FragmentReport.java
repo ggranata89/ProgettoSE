@@ -123,12 +123,6 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
         inflater.inflate(R.menu.menu_report, menu);
     }
 
-    public void sendMyReport(){
-        title = tvTitle.getText().toString().trim();
-        description = tvDescription.getText().toString().trim();
-        new doSendReport().execute();
-    }
-
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         priority_index = i;

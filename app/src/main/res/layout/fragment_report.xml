@@ -2,9 +2,9 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:materialdesign="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg">
 
 
 <LinearLayout
@@ -16,7 +16,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_margin="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:background="@drawable/layout_bg">
 
         <TextView
@@ -112,36 +115,6 @@
             android:id="@+id/priority">
         </Spinner>
 
-    <!--<RadioGroup
-        android:layout_width="394dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/Priority_RadioGroup"
-        android:orientation = "horizontal">
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="None"
-            android:id="@+id/Priority_radioButton1"
-            android:layout_gravity="center_horizontal" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Minor"
-            android:id="@+id/Priority_radioButton2" />
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Normal"
-            android:id="@+id/Priority_radioButton3" />
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Critical"
-            android:id="@+id/Priority_radioButton4" />
-
-    </RadioGroup>-->
         </LinearLayout>
 
     <LinearLayout
@@ -165,69 +138,7 @@
             android:id="@+id/category">
         </Spinner>
 
-    <!--<RadioGroup
-        android:layout_width="394dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/Category_RadioGroup"
-        android:orientation = "vertical">
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Waste Management"
-            android:id="@+id/Category_radioButton1"/>
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Routine Maintance"
-            android:id="@+id/Category_radioButton2" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Road Sign"
-            android:id="@+id/Category_radioButton3" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Vandalism"
-            android:id="@+id/Category_radioButton4" />
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Illegal BillPosting"
-            android:id="@+id/Category_radioButton5" />
-
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Other"
-            android:id="@+id/Category_radioButton6" />
-    </RadioGroup>-->
         </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Invia Segnalazione"
-        android:id="@+id/send_report"
-        android:onClick="sendReport"
-        android:background="#1E88E5"
-        android:visibility="invisible"
-        android:layout_gravity="center_horizontal"/>
-    <!--<com.gc.materialdesign.views.ButtonFloat
-        android:id="@+id/send_report"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:layout_marginBottom="100dp"
-        android:background="#1E88E5"
-        android:onClick="sendReport"
-        materialdesign:animate="true"
-        materialdesign:iconDrawable="@drawable/send_now" />-->
 
 </LinearLayout>
 
