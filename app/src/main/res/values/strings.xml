@@ -24,5 +24,17 @@
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="title">Titolo</string>
+    <string name="description">Descrizione</string>
+    <string name="priority">Priorità</string>
+
+    <!-- Priority Array -->
+    <string-array name="priority_array">
+        <item>Nessuno</item>
+        <item>Bassa</item>
+        <item>Normale</item>
+        <item>Critica</item>
+    </string-array>
 </resources>
 

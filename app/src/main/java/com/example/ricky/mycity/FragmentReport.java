@@ -19,10 +19,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -43,7 +46,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class FragmentReport extends Fragment implements Costanti,View.OnClickListener {
+public class FragmentReport extends Fragment implements Costanti,View.OnClickListener, AdapterView.OnItemSelectedListener {
     private String sessid,session_name,token, name,fid;
     private String title,description,encoded_image;
     private double latitude, longitude;
@@ -59,7 +62,12 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
 
         tvTitle = (EditText) rootView.findViewById(R.id.report_title);
         tvDescription = (EditText) rootView.findViewById(R.id.report_body);
-        PriorityGroup = (RadioGroup) rootView.findViewById(R.id.Priority_RadioGroup);
+        //PriorityGroup = (RadioGroup) rootView.findViewById(R.id.Priority_RadioGroup);
+        Spinner prioritySpinner = (Spinner) rootView.findViewById(R.id.priority);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),R.array.priority_array, android.R.layout.simple_spinner_dropdown_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        prioritySpinner.setAdapter(adapter);
+        prioritySpinner.setOnItemSelectedListener(this);
         CategoryGroup = (RadioGroup) rootView.findViewById(R.id.Category_RadioGroup);
 
         SharedPreferences user_details = this.getActivity().getSharedPreferences("userDetails", Context.MODE_PRIVATE);
@@ -80,17 +88,27 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
     }
 
     @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        priority_index = i;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    @Override
     public void onClick(View v) {
 
         switch (v.getId()) {
             case R.id.send_report:
                 title = tvTitle.getText().toString().trim();
                 description = tvDescription.getText().toString().trim();
-                int radioButtonID = PriorityGroup.getCheckedRadioButtonId();
-                View radioButton = PriorityGroup.findViewById(radioButtonID);
-                priority_index = PriorityGroup.indexOfChild(radioButton);
-                radioButtonID = CategoryGroup.getCheckedRadioButtonId();
-                radioButton = CategoryGroup.findViewById(radioButtonID);
+                //int radioButtonID = PriorityGroup.getCheckedRadioButtonId();
+                //View radioButton = PriorityGroup.findViewById(radioButtonID);
+                //priority_index = PriorityGroup.indexOfChild(radioButton);
+                int radioButtonID = CategoryGroup.getCheckedRadioButtonId();
+                View radioButton = CategoryGroup.findViewById(radioButtonID);
                 category_index = CategoryGroup.indexOfChild(radioButton);
                 new doSendReport().execute();
                 break;
@@ -154,8 +172,8 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
             if (resultCode == getActivity().RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
                 Toast.makeText(getActivity(), "Image saved to:\n" + this.fileUri, Toast.LENGTH_LONG).show();
-                setBackgroundIconCamera(fileUri.getPath());
                 path = fileUri.getPath();
+                setBackgroundIconCamera(path);
                 encoded_image = createEncodedImage(path);
                 new doUploadImage().execute(encoded_image);
             } else if (resultCode == getActivity().RESULT_CANCELED) {
