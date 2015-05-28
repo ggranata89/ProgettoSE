@@ -28,6 +28,7 @@
     <string name="title">Titolo</string>
     <string name="description">Descrizione</string>
     <string name="priority">Priorità</string>
+    <string name="category">Categoria</string>
 
     <!-- Priority Array -->
     <string-array name="priority_array">
@@ -35,6 +36,16 @@
         <item>Bassa</item>
         <item>Normale</item>
         <item>Critica</item>
+    </string-array>
+
+    <!-- Category Array -->
+    <string-array name="category_array">
+        <item>Gestione rifiuti</item>
+        <item>Manutenzione ordinaria</item>
+        <item>Segnaletica stradale</item>
+        <item>Vandalismo</item>
+        <item>Affissione abusiva</item>
+        <item>Altro</item>
     </string-array>
 </resources>
 

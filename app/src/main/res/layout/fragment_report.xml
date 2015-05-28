@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:materialdesign="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
@@ -142,19 +144,28 @@
     </RadioGroup>-->
         </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="10dp"
+        android:background="@drawable/layout_bg">
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Category:"
+        android:text="@string/category"
         android:id="@+id/textView3"
-        android:layout_margin="0dp"
-        android:layout_marginLeft="2dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginBottom="0dp" />
+        android:layout_margin="10dp"/>
 
-    <RadioGroup
+        <Spinner
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/category">
+        </Spinner>
+
+    <!--<RadioGroup
         android:layout_width="394dp"
         android:layout_height="wrap_content"
         android:id="@+id/Category_RadioGroup"
@@ -195,18 +206,30 @@
             android:layout_height="wrap_content"
             android:text="Other"
             android:id="@+id/Category_radioButton6" />
-
-
-
-    </RadioGroup>
+    </RadioGroup>-->
+        </LinearLayout>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send Report"
+        android:text="Invia Segnalazione"
         android:id="@+id/send_report"
+        android:onClick="sendReport"
+        android:background="#1E88E5"
         android:layout_gravity="center_horizontal"/>
+    <!--<com.gc.materialdesign.views.ButtonFloat
+        android:id="@+id/send_report"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginBottom="100dp"
+        android:background="#1E88E5"
+        android:onClick="sendReport"
+        materialdesign:animate="true"
+        materialdesign:iconDrawable="@drawable/send_now" />-->
 
 </LinearLayout>
+
+
     </ScrollView>
 

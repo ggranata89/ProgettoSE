@@ -28,6 +28,8 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.gc.materialdesign.views.ButtonFloat;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -62,14 +64,28 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
 
         tvTitle = (EditText) rootView.findViewById(R.id.report_title);
         tvDescription = (EditText) rootView.findViewById(R.id.report_body);
-        //PriorityGroup = (RadioGroup) rootView.findViewById(R.id.Priority_RadioGroup);
         Spinner prioritySpinner = (Spinner) rootView.findViewById(R.id.priority);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),R.array.priority_array, android.R.layout.simple_spinner_dropdown_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         prioritySpinner.setAdapter(adapter);
         prioritySpinner.setOnItemSelectedListener(this);
-        CategoryGroup = (RadioGroup) rootView.findViewById(R.id.Category_RadioGroup);
+        Spinner categorySpinner = (Spinner) rootView.findViewById(R.id.category);
+        ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(getActivity(), R.array.category_array, android.R.layout.simple_spinner_dropdown_item);
+        adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categorySpinner.setAdapter(adapter1);
+        categorySpinner.setSelection(1);
+        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d("LISTENER CATEGORY", "CATEGORY: " + i);
+                category_index = i;
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                //TODO
+            }
+        });
         SharedPreferences user_details = this.getActivity().getSharedPreferences("userDetails", Context.MODE_PRIVATE);
         sessid = user_details.getString("sessid","");
         session_name = user_details.getString("session_name", "");
@@ -79,12 +95,15 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
         latitude = args.getDouble("latitude", 0.0);
         longitude = args.getDouble("longitude", 0.0);
 
-        Button b = (Button) rootView.findViewById(R.id.send_report);
-        b.setOnClickListener(this);
-
         cameraButton = (ImageButton) rootView.findViewById(R.id.camera);
         cameraButton.setOnClickListener(this);
         return rootView;
+    }
+
+    public void sendMyReport(){
+        title = tvTitle.getText().toString().trim();
+        description = tvDescription.getText().toString().trim();
+        new doSendReport().execute();
     }
 
     @Override
@@ -94,25 +113,13 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
-
+        //TODO
     }
 
     @Override
     public void onClick(View v) {
 
         switch (v.getId()) {
-            case R.id.send_report:
-                title = tvTitle.getText().toString().trim();
-                description = tvDescription.getText().toString().trim();
-                //int radioButtonID = PriorityGroup.getCheckedRadioButtonId();
-                //View radioButton = PriorityGroup.findViewById(radioButtonID);
-                //priority_index = PriorityGroup.indexOfChild(radioButton);
-                int radioButtonID = CategoryGroup.getCheckedRadioButtonId();
-                View radioButton = CategoryGroup.findViewById(radioButtonID);
-                category_index = CategoryGroup.indexOfChild(radioButton);
-                new doSendReport().execute();
-                break;
-
             case R.id.camera:
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 

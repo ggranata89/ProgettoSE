@@ -15,6 +15,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -81,6 +82,10 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         this.addSubheader(getAppVersion());
 
         this.addBottomSection(newSection(getString(R.string.bottom), R.mipmap.settings, new Intent(this,Settings.class)));
+    }
+
+    public void sendReport(View view){
+        fragmentReport.sendMyReport();
     }
 
     private void getMyLocation() {
