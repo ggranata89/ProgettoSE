@@ -1,5 +1,6 @@
 package com.example.ricky.mycity;
 
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -43,6 +44,7 @@ public class FragmentMap extends Fragment {
     private double latitude, longitude;
     private ImageView ivImage;
     private int lastVid = 0;
+    private ProgressDialog progressDialog;
 
 
     @Override
@@ -75,6 +77,13 @@ public class FragmentMap extends Fragment {
     private class doLoadLocation extends AsyncTask<Void, Void, HashMap<String, Report>> implements Costanti {
         public HashMap<String, Report> reportMap = new HashMap<>();
         Report report = null;
+
+        @Override
+        protected void onPreExecute(){
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage("Caricamento segnalazioni in corso...");
+            progressDialog.show();
+        }
 
         @Override
         protected HashMap<String, Report> doInBackground(Void... params) {
@@ -176,6 +185,7 @@ public class FragmentMap extends Fragment {
                     googleMap.addMarker(markerOptions).showInfoWindow();
                 }
             }
+            progressDialog.dismiss();
         }
    }
 
