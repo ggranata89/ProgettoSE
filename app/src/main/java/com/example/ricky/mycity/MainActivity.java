@@ -3,6 +3,7 @@ package com.example.ricky.mycity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -31,7 +32,7 @@ import it.neokree.materialnavigationdrawer.elements.listeners.MaterialAccountLis
 import static com.example.ricky.mycity.Costanti.MINIMUM_DISTANCE_CHANGE_FOR_UPDATES;
 import static com.example.ricky.mycity.Costanti.MINIMUM_TIME_BETWEEN_UPDATES;
 
-public class MainActivity extends MaterialNavigationDrawer implements MaterialAccountListener {
+public class MainActivity extends MaterialNavigationDrawer implements MaterialAccountListener,Costanti {
 
     private String name, mail, img_url;
     private ProgressDialog pDialog;
@@ -43,9 +44,13 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     private FragmentReport fragmentReport = new FragmentReport();
     private boolean isGPSEnabled, isNetworkEnabled;
     private Location location;
+    //private final MyReceiver myReceiver = new MyReceiver();
+    //private final IntentFilter intentFilter = new IntentFilter(CUSTOM_INTENT);
 
     @Override
     public void init(Bundle savedInstanceState){
+
+        //registerReceiver(myReceiver, intentFilter);
 
         getMyLocation();
 
@@ -72,12 +77,12 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         this.setAccountListener(this);
         this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, fragmentReport));
         this.addSection(newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, fragmentMap));
-        this.addSection(newSection(getString(R.string.mie_segnalazioni), R.mipmap.profile, new FragmentMyReports()).setSectionColor(Color.parseColor("#FFA500")));
+        this.addSection(newSection(getString(R.string.mie_segnalazioni), R.mipmap.ic_action_view_as_list, new FragmentMyReports()).setSectionColor(Color.parseColor("#FFA500")));
         this.addDivisor();
         this.addSection(newSection(getString(R.string.profile), R.mipmap.profile, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
         this.addSection(newSection(getString(R.string.info), R.mipmap.info, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
         this.addSection(newSection(getString(R.string.aiuto), R.mipmap.aiuto, new FragmentButton()).setSectionColor(Color.parseColor("#03a9f4")));
-        this.addSection(newSection(getString(R.string.logout), R.mipmap.credits, new FragmentLogout()).setSectionColor(Color.parseColor("#03a9f4")));
+        this.addSection(newSection(getString(R.string.logout), R.mipmap.ic_action_remove, new FragmentLogout()).setSectionColor(Color.parseColor("#03a9f4")));
 
         this.addSubheader(getAppVersion());
 
@@ -85,6 +90,7 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     }
 
     private void getMyLocation() {
+        //sendBroadcast(new Intent(CUSTOM_INTENT));
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
         // getting GPS status
@@ -188,6 +194,19 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
             }
         }
     }
+
+    /*@Override
+    protected void onRestart() {
+        Log.d("FROM ON RESTART","SONO DENTRO ONRESTART");
+        registerReceiver(myReceiver, intentFilter);
+        super.onRestart();
+    }*/
+
+    /*@Override
+    protected void onDestroy() {
+        unregisterReceiver(myReceiver);
+        super.onDestroy();
+    }*/
 
     private class MyLocationListener implements LocationListener {
         public void onLocationChanged(Location location) {

@@ -10,7 +10,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-
     <application
         android:largeHeap="true"
         android:allowBackup="true"
@@ -35,7 +34,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main"
+            android:windowSoftInputMode="stateHidden">
         </activity>
         <activity
             android:name=".Settings"
@@ -50,6 +50,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.ricky.mycity.LoginActivity" />
         </activity>
+
+        <receiver
+            android:name=".MyReceiver"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE">
+                </action>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED">
+                </action>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
