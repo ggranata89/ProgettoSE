@@ -1,5 +1,6 @@
 package com.example.ricky.mycity;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -41,6 +42,7 @@ public class FragmentMap extends Fragment {
     private MapView mapView;
     private double latitude, longitude;
     private ImageView ivImage;
+    private int lastVid = 0;
 
 
     @Override
@@ -85,8 +87,15 @@ public class FragmentMap extends Fragment {
                 HttpResponse httpResponse = httpClient.execute(httpGet);
                 jsonResponse = EntityUtils.toString(httpResponse.getEntity());
                 JSONArray jsonArray = new JSONArray(jsonResponse);
+                Log.d("FROM FRAGMENT MAP", "JSON RESPONSE: " + jsonResponse);
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    if(i==0){
+                        lastVid = jsonObject.getInt("vid");
+                        SharedPreferences.Editor editor = getActivity().getSharedPreferences("userDetails",getActivity().MODE_PRIVATE).edit();
+                        editor.putInt("currentVid",lastVid);
+                        editor.commit();
+                    }
                     JSONParser jsonParser = new JSONParser(jsonObject);
                     Report r = jsonParser.getReportFromJSON();
                     reportMap.put(r.getTitle(),r);

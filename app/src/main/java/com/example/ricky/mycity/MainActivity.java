@@ -19,14 +19,22 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
+import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import it.neokree.materialnavigationdrawer.elements.listeners.MaterialAccountListener;
 
 import static com.example.ricky.mycity.Costanti.MINIMUM_DISTANCE_CHANGE_FOR_UPDATES;
@@ -44,6 +52,8 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     private FragmentReport fragmentReport = new FragmentReport();
     private boolean isGPSEnabled, isNetworkEnabled;
     private Location location;
+    private int lastVid = 0;
+    private MaterialSection mappaSection;
     //private final MyReceiver myReceiver = new MyReceiver();
     //private final IntentFilter intentFilter = new IntentFilter(CUSTOM_INTENT);
 
@@ -53,6 +63,8 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         //registerReceiver(myReceiver, intentFilter);
 
         getMyLocation();
+
+        new GetLastVid().execute();
 
         SharedPreferences user_details = getSharedPreferences("userDetails",MODE_PRIVATE);
 
@@ -73,10 +85,11 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         //Account
         myAccount = new MaterialAccount(this.getResources(), name, mail, R.drawable.default_img, R.drawable.background);
         this.addAccount(myAccount);
-
+        mappaSection = newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, fragmentMap);
+        //mappaSection.setNotificationsText("4+");
         this.setAccountListener(this);
         this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, fragmentReport));
-        this.addSection(newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, fragmentMap));
+        this.addSection(mappaSection);
         this.addSection(newSection(getString(R.string.mie_segnalazioni), R.mipmap.ic_action_view_as_list, new FragmentMyReports()).setSectionColor(Color.parseColor("#FFA500")));
         this.addDivisor();
         this.addSection(newSection(getString(R.string.profile), R.mipmap.profile, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
@@ -86,7 +99,45 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
 
         this.addSubheader(getAppVersion());
 
-        this.addBottomSection(newSection(getString(R.string.bottom), R.mipmap.settings, new Intent(this,Settings.class)));
+        this.addBottomSection(newSection(getString(R.string.bottom), R.mipmap.settings, new Intent(this, Settings.class)));
+        allowArrowAnimation();
+    }
+
+    private class GetLastVid extends AsyncTask<Void, Void, Integer> implements Costanti {
+        public HashMap<String, Report> reportMap = new HashMap<>();
+        Report report = null;
+
+        @Override
+        protected Integer doInBackground(Void... params) {
+
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet(REPORT_URI);
+            String jsonResponse;
+
+            try {
+                HttpResponse httpResponse = httpClient.execute(httpGet);
+                jsonResponse = EntityUtils.toString(httpResponse.getEntity());
+                JSONArray jsonArray = new JSONArray(jsonResponse);
+                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                lastVid = jsonObject.getInt("vid");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return lastVid;
+        }
+
+        @Override
+        protected void onPostExecute(Integer result){
+            SharedPreferences user_details = getSharedPreferences("userDetails", Context.MODE_PRIVATE);
+            int vid = user_details.getInt("currentVid", 0);
+            if(lastVid > vid)
+                mappaSection.setNotificationsText((lastVid-vid)+"+");
+        }
+    }
+
+    protected void onResume(){
+        new GetLastVid().execute();
+        super.onResume();
     }
 
     private void getMyLocation() {
