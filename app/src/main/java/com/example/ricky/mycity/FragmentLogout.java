@@ -61,7 +61,6 @@ public class FragmentLogout extends Fragment implements Costanti{
             user_details.commit();
             Intent intent = new Intent(getActivity(),LoginActivity.class);
             startActivity(intent);
-
         }
     }
 }

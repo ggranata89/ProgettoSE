@@ -1,5 +1,6 @@
 package com.example.ricky.mycity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 public class LoginActivity extends ActionBarActivity implements Costanti{
 
     private String sessid, sessionName, token, user, imgUrl,uid;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +62,23 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        Log.d("LOGIN ACTIVITY", "ON BACK PRESSED....");
+        finish();
+        System.exit(0);
+    }
+
     private class doLogin extends AsyncTask<String, Integer, Integer>{
+
+        protected void onPreExecute(){
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(LoginActivity.this);
+            progressDialog.setMessage("Autenticazione in corso...");
+            progressDialog.show();
+        }
+
         protected Integer doInBackground(String... params){
 
             HttpClient httpClient = new DefaultHttpClient();
@@ -105,6 +123,7 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
         }
 
         protected void onPostExecute(Integer result){
+            progressDialog.dismiss();
             if(sessionName != null && sessid != null) {
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 SharedPreferences.Editor editor = getSharedPreferences("userDetails",MODE_PRIVATE).edit();
@@ -166,6 +185,7 @@ public class LoginActivity extends ActionBarActivity implements Costanti{
             sessid = userDetails.getString("sessid","");
             token = userDetails.getString("token","");
         }
+
 
         @Override
         protected String doInBackground(Void... params) {

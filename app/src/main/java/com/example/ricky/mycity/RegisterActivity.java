@@ -1,5 +1,8 @@
 package com.example.ricky.mycity;
 
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.Toast;
 import org.apache.http.HttpResponse;
@@ -24,6 +28,7 @@ import org.json.JSONObject;
 public class RegisterActivity extends ActionBarActivity implements Costanti{
 
     EditText username, password, email;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +54,14 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
     }
 
     private class doSend extends AsyncTask<String, Integer, Integer> {
+
+        protected void onPreExecute(){
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(RegisterActivity.this);
+            progressDialog.setMessage("Registrazione in corso");
+            progressDialog.show();
+        }
+
         protected Integer doInBackground(String... params) {
 
             HttpClient httpClient = new DefaultHttpClient();
@@ -80,8 +93,8 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
         }
 
         protected void onPostExecute(Integer result) {
+            progressDialog.dismiss();
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-
             startActivity(intent);
             Toast.makeText(getApplicationContext(),"Registrazione effettuata con successo", Toast.LENGTH_LONG).show();
         }

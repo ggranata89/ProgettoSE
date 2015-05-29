@@ -1,5 +1,6 @@
 package com.example.ricky.mycity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -58,6 +59,7 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
     private RadioGroup CategoryGroup,PriorityGroup;
     private Uri fileUri;
     private ImageButton cameraButton;
+    private ProgressDialog progressDialog;
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_report, container, false);
@@ -240,6 +242,13 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
     private class doUploadImage extends AsyncTask<String,Void,Void> {
 
         @Override
+        protected void onPreExecute(){
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage("Caricamento immagine in corso");
+            progressDialog.show();
+        }
+
+        @Override
         protected Void doInBackground(String... encodedImage) {
             HttpClient mHttpClient = new DefaultHttpClient();
             HttpParams mHttpParams = new BasicHttpParams();
@@ -271,10 +280,21 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
             }
             return null;
         }
+
+        protected void onPostExecute(Void result){
+            progressDialog.dismiss();
+        }
     }
 
     private class doSendReport extends AsyncTask<Void,Void,Void>{
 
+        @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+            //progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage("Invio segnalazione in corso...");
+            progressDialog.show();
+        }
         @Override
         protected Void doInBackground(Void... params) {
             try {
@@ -303,6 +323,13 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
                 e.printStackTrace();
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result){
+            progressDialog.dismiss();
+            Toast.makeText(getActivity().getApplicationContext(),
+                    "Segnalazione inviata con successo", Toast.LENGTH_LONG).show();
         }
     }
 
