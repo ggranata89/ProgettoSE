@@ -1,52 +1,122 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg">
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/LightSkyBlue">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/layout_bg">
     <!--  Username Label -->
     <TextView android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textColor="#372c24"
-        android:text="Username"/>
+        android:text="Inserisci username"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_margin="10dp"/>
+
     <EditText android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
         android:layout_marginBottom="20dip"
         android:singleLine="true"
         android:id="@+id/reg_username" />
+    </LinearLayout>
 
-    <!--  Password Label -->
-    <TextView android:layout_width="fill_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#372c24"
-        android:text="Password"/>
-    <EditText android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dip"
-        android:layout_marginBottom="20dip"
-        android:singleLine="true"
-        android:password="true"
-        android:id="@+id/reg_password" />
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/layout_bg">
+        <!--  Password Label -->
+        <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#372c24"
+            android:text="Inserisci password"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_margin="10dp"/>
+        <EditText android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dip"
+            android:layout_marginBottom="20dip"
+            android:singleLine="true"
+            android:password="true"
+            android:id="@+id/reg_password" />
+    </LinearLayout>
 
-    <!--  Email Label -->
-    <TextView android:layout_width="fill_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#372c24"
-        android:text="Email"/>
-    <EditText android:layout_width="fill_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/layout_bg">
+        <!--  Password Label -->
+        <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#372c24"
+            android:text="Reinserisci la password"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_margin="10dp"/>
+        <EditText android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dip"
+            android:layout_marginBottom="20dip"
+            android:singleLine="true"
+            android:password="true"
+            android:id="@+id/retyped_password" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dip"
-        android:layout_marginBottom="20dip"
-        android:singleLine="true"
-        android:id="@+id/reg_email" />
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/layout_bg">
+
+        <!--  Email Label -->
+        <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#372c24"
+            android:text="Inserisci email"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_margin="10dp"/>
+        <EditText android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dip"
+            android:layout_marginBottom="20dip"
+            android:singleLine="true"
+            android:id="@+id/reg_email" />
+    </LinearLayout>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send"
+        android:text="Invia registrazione"
         android:id="@+id/button"
         android:onClick="doSendButton"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
+    </ScrollView>

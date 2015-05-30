@@ -202,7 +202,7 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
                 path = fileUri.getPath();
                 setBackgroundIconCamera(path);
                 encoded_image = createEncodedImage(path);
-                new doUploadImage().execute(encoded_image);
+
             } else if (resultCode == getActivity().RESULT_CANCELED) {
                 // User cancelled the image capture
             } else {
@@ -240,65 +240,56 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
         return imageEncoded;
     }
 
-    private class doUploadImage extends AsyncTask<String,Void,Void> {
 
-        @Override
-        protected void onPreExecute(){
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage("Caricamento immagine in corso");
-            progressDialog.show();
-        }
 
-        @Override
-        protected Void doInBackground(String... encodedImage) {
-            HttpClient mHttpClient = new DefaultHttpClient();
-            HttpParams mHttpParams = new BasicHttpParams();
-            HttpConnectionParams.setConnectionTimeout(mHttpParams, 10000);
-            HttpConnectionParams.setSoTimeout(mHttpParams, 10000);
-
-            HttpPost httppost = new HttpPost(FILE_URI);
-            httppost.setHeader("Content-type", "application/json");
-            StringEntity se;
-            try {
-
-                httppost.setHeader("Cookie", session_name + "=" + sessid);
-                httppost.setHeader("X-CSRF-Token", token);
-                JSONObject dataOut = new JSONObject();
-                dataOut.put("file", encoded_image);
-
-                dataOut.put("filename", name);
-                dataOut.put("target_uri", "/var/www/html/sites/default/files/"+name);
-
-                se = new StringEntity(dataOut.toString());
-                httppost.setEntity(se);
-                HttpResponse httpResponse = mHttpClient.execute(httppost);
-                String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
-                Log.d("FROM FRAGMENT RESPONSE", "JSONRESPONSE: " + jsonResponse);
-                JSONObject jsonObject = new JSONObject(jsonResponse);
-                fid = jsonObject.getString("fid");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        protected void onPostExecute(Void result){
-            progressDialog.dismiss();
-        }
-    }
-
-    private class doSendReport extends AsyncTask<Void,Void,Void>{
+    private class doSendReport extends AsyncTask<Void,Void,String>{
 
         @Override
         protected void onPreExecute(){
             super.onPreExecute();
-            //progressDialog = new ProgressDialog(getActivity());
+            progressDialog = new ProgressDialog(getActivity());
             progressDialog.setMessage("Invio segnalazione in corso...");
             progressDialog.show();
         }
         @Override
-        protected Void doInBackground(Void... params) {
+        protected String doInBackground(Void... params) {
+            String response="";
             try {
+                //UploadImage
+                if(name!=null) {
+                    HttpClient mHttpClient = new DefaultHttpClient();
+                    HttpParams mHttpParams = new BasicHttpParams();
+                    HttpConnectionParams.setConnectionTimeout(mHttpParams, 10000);
+                    HttpConnectionParams.setSoTimeout(mHttpParams, 10000);
+
+                    HttpPost httppost = new HttpPost(FILE_URI);
+                    httppost.setHeader("Content-type", "application/json");
+                    StringEntity se;
+
+
+                    httppost.setHeader("Cookie", session_name + "=" + sessid);
+                    httppost.setHeader("X-CSRF-Token", token);
+                    JSONObject dataOut = new JSONObject();
+                    dataOut.put("file", encoded_image);
+
+                    dataOut.put("filename", name);
+                    dataOut.put("target_uri", "/var/www/html/sites/default/files/" + name);
+
+                    se = new StringEntity(dataOut.toString());
+                    httppost.setEntity(se);
+                    HttpResponse httpResponse = mHttpClient.execute(httppost);
+                    String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
+                    Log.d("FROM FRAGMENT RESPONSE", "JSONRESPONSE: " + jsonResponse);
+                    JSONObject jsonObject = new JSONObject(jsonResponse);
+                    fid = jsonObject.getString("fid");
+
+                }
+                Log.v("title",String.valueOf(title.length()));
+                if(title.length()<1)
+                    response = "Inserire un titolo alla segnalazione";
+                if(description.equals(""))
+                    response = "Inserire una descrizione alla segnalazione";
+                else if(title.length()>0 && description.length()>0){
                 HttpClient httpClient = new DefaultHttpClient();
                 HttpPost httpPost = new HttpPost(NODE_URI);
 
@@ -313,24 +304,37 @@ public class FragmentReport extends Fragment implements Costanti,View.OnClickLis
                 jsonObject.put("field_priority", buildJSON(String.valueOf(priority_index + 1)));
                 jsonObject.put("field_category",buildJSON(String.valueOf(category_index + 1)));
                 jsonObject.put("field_report_location",buildLocationJSON(String.valueOf(latitude), String.valueOf(longitude)));
-                jsonObject.put("field_img_report", buildImageField(name));
+                if(name!=null)
+                    jsonObject.put("field_img_report", buildImageField(name));
 
                 StringEntity stringEntity = new StringEntity(jsonObject.toString());
                 httpPost.setEntity(stringEntity);
                 HttpResponse httpResponse = httpClient.execute(httpPost);
                 String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
                 Log.d("DO SEND REPORT", jsonResponse);
+                response = jsonResponse;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return null;
+            return response;
         }
 
         @Override
-        protected void onPostExecute(Void result){
+        protected void onPostExecute(String result){
             progressDialog.dismiss();
-            Toast.makeText(getActivity().getApplicationContext(),
-                    "Segnalazione inviata con successo", Toast.LENGTH_LONG).show();
+            try {
+                JSONObject jsonObject = new JSONObject(result);
+                if(jsonObject.has("nid"))
+                    Toast.makeText(getActivity().getApplicationContext(),
+                        "Segnalazione inviata con successo", Toast.LENGTH_LONG).show();
+                if(jsonObject.has("form_errors"))
+                    Toast.makeText(getActivity().getApplicationContext(),
+                            "Si sono verificati errori durante l'invio della segnalazione", Toast.LENGTH_LONG).show();
+            }catch(JSONException e){
+                Toast.makeText(getActivity().getApplicationContext(),
+                        result, Toast.LENGTH_LONG).show();
+            }
         }
     }
 

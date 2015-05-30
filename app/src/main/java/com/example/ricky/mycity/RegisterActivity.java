@@ -22,12 +22,13 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
 public class RegisterActivity extends ActionBarActivity implements Costanti{
 
-    EditText username, password, email;
+    EditText username, password, email,retypedPassword;
     private ProgressDialog progressDialog;
 
     @Override
@@ -53,7 +54,7 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
         return super.onOptionsItemSelected(item);
     }
 
-    private class doSend extends AsyncTask<String, Integer, Integer> {
+    private class doSend extends AsyncTask<String, Integer, String> {
 
         protected void onPreExecute(){
             super.onPreExecute();
@@ -62,41 +63,73 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
             progressDialog.show();
         }
 
-        protected Integer doInBackground(String... params) {
+        protected String doInBackground(String... params) {
 
             HttpClient httpClient = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(REGISTER_URI);
+            String response="";
 
             try {
                 username = (EditText) findViewById(R.id.reg_username);
                 password = (EditText) findViewById(R.id.reg_password);
+                retypedPassword = (EditText) findViewById(R.id.retyped_password);
                 email = (EditText) findViewById(R.id.reg_email);
 
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("name", username.getText().toString().trim());
-                jsonObject.put("pass", password.getText().toString().trim());
-                jsonObject.put("mail", email.getText().toString().trim());
-                jsonObject.put("status", "1");
+                if(isEmpty(username) || isEmpty(password) || isEmpty(retypedPassword) || isEmpty(email))
+                    response =  "Compilare tutti i campi";
+                else if (!password.getText().toString().trim().equals(retypedPassword.getText().toString().trim())) {
+                    response ="Le due password non corrispondono";
+                }
+                else{
+                    jsonObject.put("name", username.getText().toString().trim());
+                    jsonObject.put("pass", password.getText().toString().trim());
+                    jsonObject.put("mail", email.getText().toString().trim());
+                    jsonObject.put("status", "1");
 
-                StringEntity stringEntity = new StringEntity(jsonObject.toString());
-                Log.d("RegisterActivity", "JSON inviato: " +stringEntity);
-                stringEntity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+                    StringEntity stringEntity = new StringEntity(jsonObject.toString());
+                    Log.d("RegisterActivity", "JSON inviato: " + stringEntity);
+                    stringEntity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 
-                httpPost.setEntity(stringEntity);
-                HttpResponse httpResponse = httpClient.execute(httpPost);
-                String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
+                    httpPost.setEntity(stringEntity);
+                    HttpResponse httpResponse = httpClient.execute(httpPost);
+                    response = EntityUtils.toString(httpResponse.getEntity());
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            return 0;
+            return response;
         }
 
-        protected void onPostExecute(Integer result) {
+        protected void onPostExecute(String result) {
             progressDialog.dismiss();
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
-            Toast.makeText(getApplicationContext(),"Registrazione effettuata con successo", Toast.LENGTH_LONG).show();
+
+
+
+            try{
+
+                JSONObject json = new JSONObject(result);
+                if(json.has("uid"))
+                    Toast.makeText(getApplicationContext(),"Registrazione effettuata con successo", Toast.LENGTH_LONG).show();
+                else if(json.has("form_errors")) {
+                    JSONObject JSONError = json.getJSONObject("form_errors");
+                    if(JSONError.has("name"))
+                        Toast.makeText(getApplicationContext(), "Username non valido o già in uso", Toast.LENGTH_LONG).show();
+                    if(JSONError.has("mail"))
+                        Toast.makeText(getApplicationContext(), "Email non valida o già in uso", Toast.LENGTH_LONG).show();
+                }
+
+            }catch(JSONException e){
+                Toast.makeText(getApplicationContext(),result, Toast.LENGTH_LONG).show();
+            }
+
+        }
+
+        private boolean isEmpty(EditText editText){
+            return editText.getText().toString().trim().length()==0;
         }
     }
 
