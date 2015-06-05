@@ -136,4 +136,12 @@ public class RegisterActivity extends ActionBarActivity implements Costanti{
     public void doSendButton(View view){
         new doSend().execute();
     }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+        startActivity(intent);
+        Log.d("BACK PRESSED REGISTER","REGISTER BACK PRESSED");
+    }
 }

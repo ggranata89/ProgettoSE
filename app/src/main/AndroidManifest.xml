@@ -52,13 +52,12 @@
         </activity>
 
         <receiver
-            android:name=".MyReceiver"
-            android:exported="false" >
+            android:name=".MyReceiver">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE">
+                <action android:name="com.example.ricky.mycity.MyReceiver.show_toast">
                 </action>
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED">
-                </action>
+                <!--<action android:name="android.net.wifi.WIFI_STATE_CHANGED">
+                </action>-->
             </intent-filter>
         </receiver>
     </application>

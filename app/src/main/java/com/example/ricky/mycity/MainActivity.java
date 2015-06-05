@@ -54,13 +54,15 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     private Location location;
     private int lastVid = 0;
     private MaterialSection mappaSection;
-    //private final MyReceiver myReceiver = new MyReceiver();
+    private Intent intent = new Intent();
+    //MyReceiver myReceiver;
+    //IntentFilter intentFilter;
     //private final IntentFilter intentFilter = new IntentFilter(CUSTOM_INTENT);
 
     @Override
     public void init(Bundle savedInstanceState){
-
-        //registerReceiver(myReceiver, intentFilter);
+        intent.setAction("com.example.ricky.mycity.MyReceiver.show_toast");
+        sendBroadcast(intent);
 
         getMyLocation();
 
@@ -88,9 +90,9 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         mappaSection = newSection(getString(R.string.mappa_segnalazione), R.mipmap.map, fragmentMap);
         //mappaSection.setNotificationsText("4+");
         this.setAccountListener(this);
-        this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, fragmentReport));
+        this.addSection(newSection(getString(R.string.invia_segnalazione), R.mipmap.send_now, fragmentReport).setSectionColor(Color.parseColor("#03a9f4")));
         this.addSection(mappaSection);
-        this.addSection(newSection(getString(R.string.mie_segnalazioni), R.mipmap.ic_action_view_as_list, new FragmentMyReports()).setSectionColor(Color.parseColor("#FFA500")));
+        this.addSection(newSection(getString(R.string.mie_segnalazioni), R.mipmap.ic_action_view_as_list, new FragmentMyReports()).setSectionColor(Color.parseColor("#60b39f")));
         this.addDivisor();
         this.addSection(newSection(getString(R.string.profile), R.mipmap.profile, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
         this.addSection(newSection(getString(R.string.info), R.mipmap.info, new FragmentButton()).setSectionColor(Color.parseColor("#9c27b0")));
@@ -130,13 +132,19 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         protected void onPostExecute(Integer result){
             SharedPreferences user_details = getSharedPreferences("userDetails", Context.MODE_PRIVATE);
             int vid = user_details.getInt("currentVid", 0);
-            if(lastVid > vid)
-                mappaSection.setNotificationsText((lastVid-vid)+"+");
+            if(vid == 0){
+                mappaSection.setNotificationsText("10+"); //assegnazione statica per test
+            }
+            else
+                if(lastVid > vid)
+                    mappaSection.setNotificationsText((lastVid-vid)+"+");
         }
     }
 
     protected void onResume(){
         new GetLastVid().execute();
+        Log.d("FROM ON RESUME", "SONO DENTRO ONRESTART");
+        //registerReceiver(myReceiver, intentFilter);
         super.onResume();
     }
 
@@ -246,12 +254,12 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
         }
     }
 
-    /*@Override
-    protected void onRestart() {
-        Log.d("FROM ON RESTART","SONO DENTRO ONRESTART");
-        registerReceiver(myReceiver, intentFilter);
-        super.onRestart();
-    }*/
+    @Override
+    protected void onPause() {
+        //unregisterReceiver(myReceiver);
+        sendBroadcast(intent);
+        super.onPause();
+    }
 
     /*@Override
     protected void onDestroy() {
