@@ -1,10 +1,12 @@
 package com.example.ricky.mycity;
 
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;

@@ -1,5 +1,8 @@
 package com.example.ricky.mycity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +16,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,6 +41,7 @@ import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import it.neokree.materialnavigationdrawer.elements.listeners.MaterialAccountListener;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.example.ricky.mycity.Costanti.MINIMUM_DISTANCE_CHANGE_FOR_UPDATES;
 import static com.example.ricky.mycity.Costanti.MINIMUM_TIME_BETWEEN_UPDATES;
 
@@ -59,8 +64,44 @@ public class MainActivity extends MaterialNavigationDrawer implements MaterialAc
     //IntentFilter intentFilter;
     //private final IntentFilter intentFilter = new IntentFilter(CUSTOM_INTENT);
 
+    private static final int MY_NOTIFICATION_ID = 1;
+    private int mNotificationCount;
+
+    //Elementi testuali per le Notification
+    private final CharSequence tickerText = "Messaggio molto molto lungo";
+    private final CharSequence contentTitle = "Nuove segnalazioni in arrivo";
+    private final CharSequence contentText = "Clicca sulla mappa per visualizzare le ultime segnalazioni";
+
+    //Action Elements
+    private Intent notificationIntent;
+    private PendingIntent contentIntent;
+
+    //Suono e vibrazione
+    private Uri sound = Uri.parse("android.resource://com.example.ricky.mycity/"
+            + R.raw.alarm_rooster);
+    private long[] vibratePattern = {0,200,200,300};
+
     @Override
     public void init(Bundle savedInstanceState){
+        notificationIntent = new Intent(getApplicationContext(), FragmentMap.class);
+        contentIntent = PendingIntent.getActivity(getApplicationContext(),0,
+                notificationIntent, FLAG_ACTIVITY_NEW_TASK);
+
+        Notification.Builder notificationBuilder = new Notification.Builder(
+                getApplicationContext())
+                .setTicker(tickerText)
+                .setSmallIcon(android.R.drawable.stat_sys_warning)
+                .setAutoCancel(true)
+                .setContentTitle(contentTitle)
+                .setContentText(
+                        contentText + " (" + ++mNotificationCount + ")")
+                .setContentIntent(contentIntent).setSound(sound)
+                .setVibrate(vibratePattern);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(
+                Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(MY_NOTIFICATION_ID, notificationBuilder.build());
+
         intent.setAction("com.example.ricky.mycity.MyReceiver.show_toast");
         sendBroadcast(intent);
 

@@ -47,5 +47,6 @@
         <item>Affissione abusiva</item>
         <item>Altro</item>
     </string-array>
+    <string name="title_activity_notification_sub">NotificationSubActivity</string>
 </resources>
 
